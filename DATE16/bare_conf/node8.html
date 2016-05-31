@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Fine-grained PeMM</TITLE>
+<META NAME="description" CONTENT="Fine-grained PeMM">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node9.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html115"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html113"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html109"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html116"
+  HREF="node9.html">Approximate Error Prediction Framework</A>
+<B> Up:</B> <A NAME="tex2html114"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<B> Previous:</B> <A NAME="tex2html110"
+  HREF="node7.html">Inputs with Multiple Faults</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00023000000000000000"></A><A NAME="subsubsec:finegrained"></A>
+<BR>
+Fine-grained PeMM
+</H2>
+As stated previously, granularity of PeMM varies depending on the focusing scope of error existence. When the input vectors represent signal-level error probabilities, non-zero values in output vectors indicate the existence of errors in particular signals. An instinctive extension to the approach would be the focus of error existence in smaller granularity such as byte or nibble level, where PeMM predicts not only error existence but also in which byte/nibble the error exists. This could be of particular importance in the field of approximate application, where the achieved QoS could be traded off with other design metrics such as power consumption and area overhead.
+
+<P>
+Fine-grained PeMM can be created using additional look-up-table for values of <!-- MATH
+ $M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ M^{out_i}_{in_j}$">
+ as in Table <A HREF="#tab:byte">I</A>, where byte-level masking probabilities for selected algorithmic operations are listed. The first column represents the targeted operations while the second column forms a <I>Key</I> variable showing in which bytes the faults locate on both inputs. For instance, key 13 shows faults in <IMG
+ WIDTH="24" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img30.png"
+ ALT="$ 1^{st}$">
+ byte of first input and <IMG
+ WIDTH="26" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img31.png"
+ ALT="$ 3^{rd}$">
+ byte of second input while key 10 shows no fault in second input but only <IMG
+ WIDTH="24" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img30.png"
+ ALT="$ 1^{st}$">
+ byte of the first input. The byte-wise <!-- MATH
+ $M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ M^{out_i}_{in_j}$">
+ shows the probabilities of error existence in particular output bytes, such as single input fault in <IMG
+ WIDTH="24" HEIGHT="19" ALIGN="BOTTOM" BORDER="0"
+ SRC="img30.png"
+ ALT="$ 1^{st}$">
+ byte of <I>SUB</I> operation can result in errors in <IMG
+ WIDTH="28" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img32.png"
+ ALT="$ 2^{nd}$">
+ or even <IMG
+ WIDTH="26" HEIGHT="20" ALIGN="BOTTOM" BORDER="0"
+ SRC="img31.png"
+ ALT="$ 3^{rd}$">
+ bytes with reduced probability, whereas for AND operation no cross bytes error could be resulted from single input fault. When faults exist in multiple bytes of the same input, expected masking probabilities could be interpolated based on byte-level error probabilities.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="190"></A>
+<TABLE>
+<CAPTION><STRONG>Table I:</STRONG>
+Examples of fault approximation with byte-level granularity</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER"><TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER"><IMG
+ WIDTH="77" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img33.png"
+ ALT="$ Operation$">
+</TD>
+<TD ALIGN="CENTER"><IMG
+ WIDTH="35" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img34.png"
+ ALT="$ Key$">
+</TD>
+<TD ALIGN="CENTER" COLSPAN=4><IMG
+ WIDTH="39" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img35.png"
+ ALT="$ Byte$">
+-<!-- MATH
+ $wise\ M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="84" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img36.png"
+ ALT="$ wise\ M^{out_i}_{in_j}$">
+</TD>
+</TR>
+<TR><TD ALIGN="CENTER">SUB</TD>
+<TD ALIGN="CENTER">10</TD>
+<TD ALIGN="CENTER">1.000000</TD>
+<TD ALIGN="CENTER">0.126830</TD>
+<TD ALIGN="CENTER">0.000520</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+</TR>
+<TR><TD ALIGN="CENTER">OR</TD>
+<TD ALIGN="CENTER">22</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.721690</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+</TR>
+<TR><TD ALIGN="CENTER">AND</TD>
+<TD ALIGN="CENTER">10</TD>
+<TD ALIGN="CENTER">0.499030</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+</TR>
+<TR><TD ALIGN="CENTER">AND</TD>
+<TD ALIGN="CENTER">13</TD>
+<TD ALIGN="CENTER">0.500400</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.499900</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+</TR>
+<TR><TD ALIGN="CENTER">XOR</TD>
+<TD ALIGN="CENTER">33</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+<TD ALIGN="CENTER">0.873990</TD>
+<TD ALIGN="CENTER">0.000000</TD>
+</TR>
+</TABLE>
+
+<A NAME="tab:byte"></A>   </DIV></TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+Depending on targeted field of application, granularity can be further fine-grained, which requires additional efforts for characterization. For micro-architecture units which do not contain any algorithmic operations, such fine-grained PeMMs are not required since no crossing segment errors are resulted.
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html115"
+  HREF="node9.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html113"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html109"
+  HREF="node7.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html116"
+  HREF="node9.html">Approximate Error Prediction Framework</A>
+<B> Up:</B> <A NAME="tex2html114"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<B> Previous:</B> <A NAME="tex2html110"
+  HREF="node7.html">Inputs with Multiple Faults</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

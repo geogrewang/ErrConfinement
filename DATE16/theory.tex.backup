@@ -1,0 +1,43 @@
+\section{Proposed Error Confinement Method} \label{sec:theory}
+Assume that a set of data $d \in D = \{d_1, \ldots, d_K\}$ being produced by an application are distributed according to the probability mass function $P_d(d_k) = \mathrm{Pr}(d=d_k)$. 
+Such data are being stored in a memory which is affected  by parametric variations causing faults (i.e. bit flips) 
+in some of the bit-cells which eventually result in erroneous data leading to a new distribution $\bar{P}_{d_k}$. 
+The impact of such faults can be quantified by using a relevant error cost metric which in 
+many cases is the mean square error (MSE) defined as  
+
+\begin{equation}
+      C(d, \bar{d}) \triangleq \mathbb{E} %\big\{ (d-\bar{d})^2}
+\end{equation}
+
+% with the expectation taken over the memory input $d$. Our proposed method focuses on minimizing the MSE between the original stored data $d$ and the erroneous data $\bar{d})$ in case of side information about the error $\setF)$ through an error-mitigation function  $d^* = g(\setF)$ which can be obtained by solving the following optimization problem:
+% \begin{align}
+%     \label{eq:corrFunc}
+%     d^* = g(\setF) \triangleq \argmin_{\bar{d}} \,
+%     \setC(\bar{d} \, | \, \setF).
+% \end{align}
+% 
+% where, 
+% \begin{align}
+%     \label{eq:corrFuncMMSE}
+%     \setC(\bar{d} \, | \, \setF) \triangleq \mathbb{E}\big\{
+%     (d-\bar{d})^2 \, | \, \setF  }
+% \end{align}
+% 
+% Basic arithmetic manipulations show that the resulting correction function is given by 
+%  $g_\text{MMSE} = \mathbb{E}\{d[n] \, | \setF\}$.
+% 
+% which correspond essentially to the expected value of the original fault-free data. 
+% Such expected values can be eventually determined offline through Monte-Carlo simulations 
+% or analytically in case that the reference data distribution is known already as in many DSP applications.  
+% Note that the above function depends on the applied cost metric that is relevant 
+% for the target application and other functions may exist that can be found by following the above procedure. 
+% In our paper, we focus on MSE which is relevant for many applications and especially for our case study that we discuss later.
+  
+%The reference matrix, which contains the statistic values for the data processing, has the ability to correct wrong data once %upon error detection by \textit{replace} the wrong data with the referred one. To further ensure the output quality, the %reference matrix itself can be protected using advanced ECC scheme, which incurs low-overhead due to its small size. %In this %work, we do not consider the protection of reference matrix while also ignore the faults injected in ECC memories, so that a %straightforward comparison for two error correction schemes is performed. 
+%The advantages of DA approach over ECC are:
+
+%\begin{itemize}
+% \item \textsl{Predicted accuracy}: Statistic data collected from specific application improves the accuracy of correction due %to a pre-knowledge of the application, which is not available in generic method such as ECC.
+% \item \textsl{Multiple bits correction}: SECDED is only able to correct 1 bit for each protected data. In contrast, generalized %data gives a good approximation to the erroneous data, which shows its effects on multiple data bits.
+% \item \textsl{Low cost}: Error correction using ECC involves large area and power overhead, which are not incurred by the %approximate data.
+%\end{itemize}

@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>PeMM Definition</TITLE>
+<META NAME="description" CONTENT="PeMM Definition">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node4.html">
+<LINK REL="previous" HREF="node2.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node4.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html66"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html64"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html58"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html67"
+  HREF="node4.html">PeMM Characterization</A>
+<B> Up:</B> <A NAME="tex2html65"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<B> Previous:</B> <A NAME="tex2html59"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00021000000000000000">
+PeMM Definition</A>
+</H2>
+Consider a circuit with <IMG
+ WIDTH="14" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img4.png"
+ ALT="$ n$">
+ inputs and <IMG
+ WIDTH="18" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img5.png"
+ ALT="$ m$">
+ outputs. We label the n inputs as <!-- MATH
+ $in_0, . . . in_{n-1}$
+ -->
+<IMG
+ WIDTH="87" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img6.png"
+ ALT="$ in_0, . . . in_{n-1}$">
+ and the m outputs as <!-- MATH
+ $out_0, . . . out_{m-1}$
+ -->
+<IMG
+ WIDTH="105" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img7.png"
+ ALT="$ out_0, . . . out_{m-1}$">
+. The PeMM <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img8.png"
+ ALT="$ P$">
+ of the circuit is a matrix with dimension <!-- MATH
+ $m \times n$
+ -->
+<IMG
+ WIDTH="47" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img9.png"
+ ALT="$ m \times n$">
+. Each entry in <!-- MATH
+ $P(out_i, in_j)$
+ -->
+<IMG
+ WIDTH="86" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img10.png"
+ ALT="$ P(out_i, in_j)$">
+ represents error masking probability <!-- MATH
+ $M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ M^{out_i}_{in_j}$">
+, where <!-- MATH
+ $i\in[0,m-1]$
+ -->
+<IMG
+ WIDTH="95" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img12.png"
+ ALT="$ i\in[0,m-1]$">
+ and <!-- MATH
+ $j\in[0,n-1]$
+ -->
+<IMG
+ WIDTH="92" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img13.png"
+ ALT="$ j\in[0,n-1]$">
+. It shows the error masking effect on output <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ out_i$">
+ with regard to input <IMG
+ WIDTH="26" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$ in_j$">
+, where 0
+ means the error has been completely masked while <IMG
+ WIDTH="12" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img16.png"
+ ALT="$ 1$">
+ implies no masking effect at all. Note that <!-- MATH
+ $e_{out_i}\in[0,1]$
+ -->
+<IMG
+ WIDTH="88" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img17.png"
+ ALT="$ e_{out_i}\in[0,1]$">
+ so that value larger than 1 will be truncated. The inputs of the circuits are represented by a column vector <IMG
+ WIDTH="13" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img18.png"
+ ALT="$ I$">
+ with dimension <!-- MATH
+ $n \times 1$
+ -->
+<IMG
+ WIDTH="41" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img19.png"
+ ALT="$ n \times 1$">
+. Entry in <IMG
+ WIDTH="33" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img20.png"
+ ALT="$ I(j)$">
+ represents the error probability <IMG
+ WIDTH="31" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img21.png"
+ ALT="$ e_{in_j}$">
+ associated with input <IMG
+ WIDTH="26" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$ in_j$">
+. When the input vector is left multiplied with <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img8.png"
+ ALT="$ P$">
+, resultant output vector is represented by a column vector <IMG
+ WIDTH="17" HEIGHT="14" ALIGN="BOTTOM" BORDER="0"
+ SRC="img22.png"
+ ALT="$ O$">
+ with dimension <!-- MATH
+ $m \times 1$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img23.png"
+ ALT="$ m \times 1$">
+, whose entry shows the error probability <IMG
+ WIDTH="36" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img24.png"
+ ALT="$ e_{out_i}$">
+ associated with output of circuits. Figure <A HREF="#fig:pemm">1</A> visualizes the abstract circuit model with its PeMM.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:pemm"></A><A NAME="124"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 1:</STRONG>
+Probabilistic error Masking Matrix</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+    
+</DIV>
+   </TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+Compared to PTM which is intended for modeling entire circuit, PeMMs can also represent error masking effects of individual micro-architecture units. Such divide and conquer approach considers the circuit PeMM as the concatenation of PeMMs for architecture units. Figure <A HREF="#fig:pemm_arch">2</A> shows the architecture units for executing the ALU instructions and data signals between logic operations. The dimensions of selected PeMMs are shown based on the counts of input and output signals. In case that input faults are not completely masked, the unit outputs errors with certain probability.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:pemm_arch"></A><A NAME="132"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 2:</STRONG>
+Logic blocks involved for ALU instruction</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+    
+</DIV>
+   </TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html66"
+  HREF="node4.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html64"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html58"
+  HREF="node2.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html67"
+  HREF="node4.html">PeMM Characterization</A>
+<B> Up:</B> <A NAME="tex2html65"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<B> Previous:</B> <A NAME="tex2html59"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

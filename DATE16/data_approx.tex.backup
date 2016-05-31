@@ -1,0 +1,31 @@
+\section{Data Approximation in JPEG Application} \label{sec:data_approx}
+
+JPEG is a commonly used lossy compression technique of digital images, which offers selectable compression degree to trade off between storage size and image quality. JPEG consists of several major steps including color space transformation and down sampling. In this work, we focus on the subsystem shown in Figure \ref{fig:qos_jpeg} which consists of four major blocks, the 2D Discrete Cosine Transformation (2-D DCT), Quantization, De-quantization and 2D Inverse Discrete Cosine Transformation (2-D IDCT). Figure \ref{fig:qos_jpeg} also shows the different stages of the processing image as it propagates through the system. The quality of the output image is evaluated using PSNR \cite{huynh2008scope}. A typical PSNR value for lossy image is 30 dB. The final output image in Figure \ref{fig:qos_jpeg} has a PSNR of 39.22 dB, which is intrinsic tolerable due to the perceptual limitations of human brain.
+
+\paragraph{2-D DCT} is widely adopted in digital image and video processing. It transfers individual $8 \times 8$ image block from spatial domain to frequency domain. The conventional DCT principle could be referred in \cite{gonzalez2009digital} while there exists low power and fault tolerant implementation for 2-D DCT \cite{august2004low}\cite{banerjee2007process}. The output $8 \times 8$ matrix of DCT contains the frequency coefficients which affect the image quality. However, their impacts are non-uniform. According to \cite{banerjee2007process} the first 20 coefficient occurs 85\% of the input image quality while the rest 44 coefficients have significantly less contribution in improving the image quality. 2-D IDCT is the inverse operation of DCT, which transforms the coefficient in frequency domain back to the spatial domain.
+
+\paragraph{Quantization} is used to compress the image according to different JPEG standard. Each element in the input matrix is divided by a coefficient in the quantization matrix. This usually leads to a matrix with non-zero numbers on the top-left corner while zeros in other part of the matrix. De-quantization is the inverse operation of quantization, which scales up the value by multiply the same coefficient in the quantization matrix.
+
+\begin{figure}
+\centering
+\includegraphics[width=90mm]{./eps/qos_jpeg}
+\caption{Subsystem in JPEG application}
+\label{fig:qos_jpeg}
+\end{figure}
+
+The feature of data approximation is easily found in the output matrix of DCT and quantization. The input image which has the resolution of $512 \times 512$ is decomposed into 4,096 matrices of the size $8 \times 8$, where each matrix is being processed individually. Simulation shows that the individual output matrix shares similar pattern, where the top-left corner of both DCT and quantization output matrix exhibits larger number, while the rest ones remains small and even zero for quantization output matrix. Figure \ref{fig:qos_matrix} shows the element wise average matrix for the complete 4,096 individual matrix, which are treated as the reference matrices.
+
+\begin{figure}
+\centering
+\includegraphics[width=90mm]{./eps/qos_matrix}
+\caption{Data Approximation for DCT and Quantization}
+\label{fig:qos_matrix}
+\end{figure}
+
+The reference matrix, which contains the average values for the image processing, has the ability to correct wrong data once upon error detection by \textit{replace} the wrong data with the referred one. To further ensure the output quality, the reference matrix itself can be protected using advanced ECC scheme, which incurs low-overhead due to its small size. In this work, we do not take the protection of reference matrix into consideration to maintain a fair comparison with ECC scheme as error correction. The advantages of using reference matrix compared to traditional methods such as ECC are:
+
+\begin{itemize}
+ \item \textsl{Predicted accuracy}: Average data collected from specific application improves the accuracy of correction due to a pre-knowledge of the application, which is not available in generic method such as ECC.
+ \item \textsl{Multiple bits correction}: SECDED is only able to correct 1 bit for each protected data without checkpointing. In contrast, generalized data gives a good approximation to the erroneous data, which shows its effects on multiple data bits.
+ \item \textsl{Low cost}: Error correction using ECC involves large area and power overhead due to complicated encoding and decoding logic, which are not incurred by the approximate data.
+\end{itemize}

@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>PeMM Characterization</TITLE>
+<META NAME="description" CONTENT="PeMM Characterization">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node8.html">
+<LINK REL="previous" HREF="node3.html">
+<LINK REL="up" HREF="node2.html">
+<LINK REL="next" HREF="node5.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html76"
+  HREF="node5.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html74"
+  HREF="node2.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html68"
+  HREF="node3.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html77"
+  HREF="node5.html">Targeting large logic blocks</A>
+<B> Up:</B> <A NAME="tex2html75"
+  HREF="node2.html">Probabilistic Error Masking Matrix</A>
+<B> Previous:</B> <A NAME="tex2html69"
+  HREF="node3.html">PeMM Definition</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00022000000000000000">
+PeMM Characterization</A>
+</H2>
+PeMM for large circuits can be deducted through gate-level PeMM combinations, which requires a detailed knowledge on gate-level netlist of the targeted circuits. However, when the discussion is focused on the fault propagation analysis where only the primary inputs of logic blocks are faulty, PeMM can be also characterized through high-level behavioral simulation, for instance using C language based testbenches. For a specific circuit with random data inputs, the masking probability <!-- MATH
+ $M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ M^{out_i}_{in_j}$">
+ can be acquired by averaging the error probability on <IMG
+ WIDTH="32" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img14.png"
+ ALT="$ out_i$">
+ among multiple experiments, where one bit-flip fault is injected onto input <IMG
+ WIDTH="26" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img15.png"
+ ALT="$ in_j$">
+ in each experiment.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html78"
+  HREF="node5.html">Targeting large logic blocks</A>
+<LI><A NAME="tex2html79"
+  HREF="node6.html">Control flow handling for Logic block</A>
+<LI><A NAME="tex2html80"
+  HREF="node7.html">Inputs with Multiple Faults</A>
+</UL>
+<!--End of Table of Child-Links-->
+<BR><HR>
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

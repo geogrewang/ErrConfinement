@@ -1,0 +1,165 @@
+\begin{thebibliography}{10}
+
+\bibitem{trends_reliability}
+C.~Constantinescu.
+\newblock Trends and challenges in vlsi circuit reliability.
+\newblock {\em IEEE Micro}, 23(4):14--19, 2003.
+
+\bibitem{ground_level_signal}
+{E. Normand}.
+\newblock Single event upset at ground level.
+\newblock {\em IEEE Transactions on Nuclear Science}, 43(6):2742--2750, 1996.
+
+\bibitem{ibm:ramp}
+P.~Bose J.~Rivers J.~Srinivasan, S. V.~Adve and C.~K. Hu.
+\newblock {RAMP: A model for reliability aware microprocessor design}.
+\newblock {\em IBM Research Report}, 2003.
+
+\bibitem{david_fault_injection}
+{D. Kammler, J. Guan, G. Ascheid, R. Leupers and H. Meyr}.
+\newblock {A fast and flexible Platform for Fault Injection and Evaluation in
+  Verilog-based Simulations}.
+\newblock In {\em {Proc. 3rd IEEE International Conference on Secure Software
+  Integration and Reliability Improvement (SSIRI '09)}}, {Shanghai, China},
+  {Jul} {2009}.
+
+\bibitem{ser_sim}
+{M. Sugihara, T. Ishihara, M. Muroyama and K. Hashimoto}.
+\newblock {A Simulation-Based Soft Error Estimation Methodology for Computer
+  Systems}.
+\newblock In {\em ISQED}, pages 196--203, 2006.
+
+\bibitem{swat}
+{M. Li, P. Ramachandran, S. K. Sahoo, S. V. Adve, V. S. Adve and Y. Zhou}.
+\newblock {Understanding the Propagation of Hard Errors to Software and
+  Implications for Resilient System Design}.
+\newblock In {\em {In Proc. Intl. Conf. on Architectural Support for
+  Programming Languages and Operating Systems(ASPLOS)}}, {2008}.
+
+\bibitem{WangZISQED13}
+{Z. Wang, C. Chen and A. Chattopadhyay}.
+\newblock {Fast reliability exploration for embedded processors via high-level
+  fault injection}.
+\newblock In {\em ISQED}, pages 265--272, 2013.
+
+\bibitem{ChoMCAM13}
+H.~Cho, S.~Mirkhani, C.~Cher, J.~A. Abraham, and S.~Mitra.
+\newblock Quantitative evaluation of soft error injection techniques for robust
+  system design.
+\newblock In {\em DAC}, page 101, 2013.
+
+\bibitem{MukherjeeWERA03}
+S.~S. Mukherjee, C.~T. Weaver, J.~S. Emer, S.~K. Reinhardt, and T.~M. Austin.
+\newblock A systematic methodology to compute the architectural vulnerability
+  factors for a high-performance microprocessor.
+\newblock In {\em MICRO}, pages 29--42, 2003.
+
+\bibitem{BiswasREM07}
+A.~Biswas, P.~Racunas, J.~S. Emer, and S.~S. Mukherjee.
+\newblock {Computing Accurate AVFs using ACE Analysis on Performance Models: A
+  Rebuttal}.
+\newblock {\em Computer Architecture Letters}, 7(1):21--24, 2007.
+
+\bibitem{RehmanSKH11}
+S.~Rehman, M.~Shafique, F.~Kriebel, and J.~Henkel.
+\newblock Reliable software for unreliable hardware: embedded code generation
+  aiming at reliability.
+\newblock In {\em CODES+ISSS}, pages 237--246, 2011.
+
+\bibitem{rehman_raise}
+{S. Rehman, M. Shafique, F. Kriebel and J. Henkel}.
+\newblock {RAISE: Reliability-Aware Instruction SchEduling for unreliable
+  hardware}.
+\newblock In {\em ASP-DAC '12}, pages 671 --676, 30 2012-feb. 2 2012.
+
+\bibitem{WangZDate13}
+{Z. Wang, K. Singh, C. Chen and A. Chattopadhyay}.
+\newblock {Accurate and efficient reliability estimation techniques during
+  ADL-driven embedded processor design}.
+\newblock In {\em Proceedings of the Conference on Design, Automation and Test
+  in Europe}, DATE, pages 547--552, 2013.
+
+\bibitem{razor}
+D.~Ernst, N.~S. Kim, S.~Das, S.~Pant, R.~R. Rao, T.~Pham, C.~H. Ziesler,
+  D.~Blaauw, T.~M. Austin, K.~Flautner, and Trevor~N. Mudge.
+\newblock Razor: A low-power pipeline based on circuit-level timing
+  speculation.
+\newblock In {\em MICRO}, 2003.
+
+\bibitem{ibm:lifetime}
+{J. Srinivasan, S. V. Adve, P. Bose and J. A. Rivers}.
+\newblock {The Case for Lifetime Reliability-Aware Microprocessors}.
+\newblock {\em SIGARCH Comput. Archit. News}, 32(2):276, 2004.
+
+\bibitem{kahng_vasco}
+{A. Kahng, S. Kang, R. Kumar, and J. Sartori}.
+\newblock {Designing Processors from the Ground up to Allow Voltage/Reliability
+  Tradeoffs}.
+\newblock In {\em HPCA}, 2010.
+
+\bibitem{reinhardt_smt}
+{S. K. Reinhardt and S. S Mukherjee}.
+\newblock {Transient Fault Detection via Simultaneous Multithreading}.
+\newblock ISCA '00, pages 25--36, 2000.
+
+\bibitem{dehon}
+A.~DeHon, H.~M. Quinn, and N.~P. Carter.
+\newblock Vision for cross-layer optimization to address the dual challenges of
+  energy and reliability.
+\newblock In {\em DATE}, pages 1017--1022. IEEE, 2010.
+
+\bibitem{hegde_ant}
+{R. Hegde and N.R. Shanbhag}.
+\newblock {Energy-efficient Signal Processing via Algorithmic Noise-tolerance}.
+\newblock ISLPED '99.
+
+\bibitem{GuptaMRR13}
+V.~Gupta, D.~Mohapatra, A.~Raghunathan, and K.~Roy.
+\newblock Low-power digital signal processing using approximate adders.
+\newblock {\em IEEE Trans. on CAD of Integrated Circuits and Systems},
+  32(1):124--137, 2013.
+
+\bibitem{mitra_ersa}
+{H. Cho, L. Leem and S. Mitra}.
+\newblock {ERSA: Error Resilient System Architecture for Probabilistic
+  Applications}.
+\newblock {\em IEEE Trans. on CAD of Integrated Circuits and Systems},
+  31(4):546--558, 2012.
+
+\bibitem{Palem2013}
+K.~Palem and A.~Lingamneni.
+\newblock Ten years of building broken chips: The physics and engineering of
+  inexact computing.
+\newblock {\em ACM Trans. Embed. Comput. Syst.}, 12(2s):87:1--87:23, May 2013.
+
+\bibitem{Keding98icspat}
+M.~Willems H.~Keding, F.~Hürtgen and M.~Coors.
+\newblock Transformation of floating-point into fixed-point algorithms by
+  interpolation applying a statistical approach.
+\newblock In {\em Proc. Int. Conf. on Signal Processing Application and
+  Technology (ICSPAT)}, Toronto, sep 1998.
+
+\bibitem{KrishnaswamyVMH08}
+{S. Krishnaswamy, G. F. Viamontes, I. L. Markov and J. P. Hayes}.
+\newblock {Probabilistic transfer matrices in symbolic reliability analysis of
+  logic circuits}.
+\newblock {\em ACM Trans. Design Autom. Electr. Syst.}, 13(1), 2008.
+
+\bibitem{lisa:snps}
+{Synopsys}.
+\newblock {\em Processor Designer\\
+  http://www.synopsys.com/Systems/BlockDesign/processorDev}.
+
+\bibitem{chattopadhyay08a}
+{A. Chattopadhyay, H. Meyr and R. Leupers}.
+\newblock {\em {LISA: A Uniform ADL for Embedded Processor Modelling,
+  Implementation and Software Toolsuite Generation}}, chapter~5, pages 95--130.
+\newblock Morgan Kaufmann, jun 2008.
+
+\bibitem{medianfilter}
+T.~Huang, G.~Yang, and G.~Tang.
+\newblock A fast two-dimensional median filtering algorithm.
+\newblock {\em IEEE Trans. Acoust., Speech, Signal Processing}, 27(1):13--18,
+  1979.
+
+\end{thebibliography}

@@ -1,0 +1,62 @@
+\begin{thebibliography}{10}
+
+\bibitem{borkar2010exascale}
+S.~Borkar, ``The exascale challenge,'' {\em Proc. VLSI-DAT}, 2010.
+
+\bibitem{semiconductor2004soft}
+T.~Semiconductor, ``Soft errors in electronic memory-a white paper,'' 2004.
+
+\bibitem{EmreC13}
+Y.~Emre and C.~Chakrabarti, ``Techniques for compensating memory errors in
+  {JPEG2000},'' {\em {IEEE} Trans. {VLSI} Syst.}, vol.~21, no.~1, pp.~159--163,
+  2013.
+
+\bibitem{dong2009leveraging}
+X.~Dong, N.~Muralimanohar, N.~Jouppi, R.~Kaufmann, and Y.~Xie, ``Leveraging 3d
+  pcram technologies to reduce checkpoint overhead for future exascale
+  systems,'' in {\em Proceedings of the Conference on High Performance
+  Computing Networking, Storage and Analysis}, ACM, 2009.
+
+\bibitem{chippa2013analysis}
+V.~K. Chippa, S.~T. Chakradhar, K.~Roy, and A.~Raghunathan, ``Analysis and
+  characterization of inherent application resilience for approximate
+  computing,'' in {\em Proceedings of the 50th Annual Design Automation
+  Conference}, ACM, 2013.
+
+\bibitem{YuehCM13}
+W.~Yueh, M.~Cho, and S.~Mukhopadhyay, ``Perceptual quality preserving {SRAM}
+  architecture for color motion pictures,'' in {\em Design, Automation and Test
+  in Europe, {DATE} 13, Grenoble, France, March 18-22, 2013}, pp.~103--108,
+  2013.
+
+\bibitem{LeeKPP13}
+I.~Lee, J.~Kwon, J.~Park, and J.~Park, ``Priority based error correction code
+  {(ECC)} for the embedded {SRAM} memories in {H.264} system,'' {\em Signal
+  Processing Systems}, vol.~73, no.~2, pp.~123--136, 2013.
+
+\bibitem{esmaeilzadeh2012architecture}
+H.~Esmaeilzadeh, A.~Sampson, L.~Ceze, and D.~Burger, ``Architecture support for
+  disciplined approximate programming,'' in {\em ACM SIGPLAN Notices}, vol.~47,
+  pp.~301--312, ACM, 2012.
+
+\bibitem{venkataramani2013quality}
+S.~Venkataramani, V.~K. Chippa, S.~T. Chakradhar, K.~Roy, and A.~Raghunathan,
+  ``Quality programmable vector processors for approximate computing,'' in {\em
+  Proceedings of the 46th Annual IEEE/ACM International Symposium on
+  Microarchitecture}, pp.~1--12, ACM, 2013.
+
+\bibitem{sampson2011enerj}
+A.~Sampson, W.~Dietl, E.~Fortuna, D.~Gnanapragasam, L.~Ceze, and D.~Grossman,
+  ``Enerj: Approximate data types for safe and general low-power computation,''
+  in {\em ACM SIGPLAN Notices}, vol.~46, pp.~164--174, ACM, 2011.
+
+\bibitem{gonzalez2009digital}
+R.~C. Gonzalez, {\em Digital image processing}.
+\newblock Pearson Education India, 2009.
+
+\bibitem{huynh2008scope}
+Q.~Huynh-Thu and M.~Ghanbari, ``Scope of validity of psnr in image/video
+  quality assessment,'' {\em Electronics letters}, vol.~44, no.~13,
+  pp.~800--801, 2008.
+
+\end{thebibliography}

@@ -1,0 +1,14 @@
+c \thisissectionseparator{-}
+c \thisisutilityversion{2006.09.21}
+c \thisisbytesequence{À}
+c \usedmapfile{=}{texnansi-public-lm}
+c \usedmapfile{=}{original-base}
+c \usedmapfile{=}{ec-public-lm}
+c \usedmapfile{=}{ec-base}
+c \usedmapfile{=}{lm-ec}
+c \usedmapfile{=}{8r-base}
+c \usedmapfile{=}{t5-base}
+c \usedmapfile{=}{original-ams-base}
+c \usedmapfile{=}{original-ams-euler}
+c \usedmapfile{=}{original-public-lm}
+c \initializevariable\usedcolorchannels{}

@@ -1,0 +1,206 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Accuracy Analysis in Error Prediction</TITLE>
+<META NAME="description" CONTENT="Accuracy Analysis in Error Prediction">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node15.html">
+<LINK REL="previous" HREF="node13.html">
+<LINK REL="up" HREF="node12.html">
+<LINK REL="next" HREF="node15.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html178"
+  HREF="node15.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html176"
+  HREF="node12.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html170"
+  HREF="node13.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html179"
+  HREF="node15.html">Prediction of Error Locations</A>
+<B> Up:</B> <A NAME="tex2html177"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<B> Previous:</B> <A NAME="tex2html171"
+  HREF="node13.html">Error Prediction Report</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00042000000000000000">
+Accuracy Analysis in Error Prediction</A>
+</H2>
+
+<P>
+A benchmark containing all instruction groups for the RISC processor is applied for testing the accuracy of error prediction. The program processes data in a loop using general purpose register arrays R[1] to R[15] while stores the final data into memory. Error prediction results using different modes of PeMM construction are compared with fault injection experiments [<A
+ HREF="node17.html#WangZISQED13">7</A>] to verify its accuracy. For each mode, 10,000 experiments are carried out to characterize elements of all PeMMs in the architecture. Figure <A HREF="#fig:accuracy">6</A> shows the prediction results. It is shown that the initial PeMM without matrix decomposition achieves least accuracy compared with fault injection, while proper decomposition and applicance of assistant signals for control flow prediction increase the accuracy significantly. When assitant signals are inserted for control paths in all logic blocks, the predicted error probabilities and locations perfectly match the results from fault injection.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:accuracy"></A><A NAME="530"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 6:</STRONG>
+Error Prediction Accuracy for Different Modes of PeMM against Fault Injection[<A
+ HREF="node17.html#WangZISQED13">7</A>]</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+    
+</DIV>
+   </TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+Table <A HREF="#tbl:overhead">III</A> shows the timing overhead caused by the token tracking against fault-free simulation using several embedded benchmarks. Analysis without any token adds in average 28.4% simulation overhead due to the additional operation checking in each clock cycle. When there is one token created, the tracking routine consumes 6.7% overhead. When 20 tokens are created, in average 79.3% overhead is added. The exact overheads differs among experiments due to the host machine usage and randomness in both injected location and time instance, where in most of the case tokens are masked by correct data during execution. Multiple tokens scales the simulation time in a linear fashion due to the fact that tokens are managed in the unordered hash list with searching complexity <I>O(1)</I>.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="513"></A>
+<TABLE>
+<CAPTION><STRONG>Table III:</STRONG>
+Timing Overhead Analysis against Fault Injection</CAPTION>
+<TR><TD>  <DIV ALIGN="CENTER">
+
+        <TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Apps</TD>
+<TD ALIGN="CENTER">High-level fault</TD>
+<TD ALIGN="CENTER" COLSPAN=6>Error tracker</TD>
+</TR>
+<TR><TD ALIGN="CENTER">&nbsp;</TD>
+<TD ALIGN="CENTER">injection[<A
+ HREF="node17.html#WangZISQED13">7</A>]</TD>
+<TD ALIGN="CENTER" COLSPAN=2>0 token</TD>
+<TD ALIGN="CENTER" COLSPAN=2>1 token</TD>
+<TD ALIGN="CENTER" COLSPAN=2>20 tokens</TD>
+</TR>
+<TR><TD ALIGN="CENTER">&nbsp;</TD>
+<TD ALIGN="CENTER">No fault (sec)</TD>
+<TD ALIGN="CENTER">(sec)</TD>
+<TD ALIGN="CENTER">+%</TD>
+<TD ALIGN="CENTER">(sec)</TD>
+<TD ALIGN="CENTER">+%</TD>
+<TD ALIGN="CENTER">(sec)</TD>
+<TD ALIGN="CENTER">+%</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Cordic</TD>
+<TD ALIGN="CENTER">0.17</TD>
+<TD ALIGN="CENTER">0.23</TD>
+<TD ALIGN="CENTER">35</TD>
+<TD ALIGN="CENTER">0.25</TD>
+<TD ALIGN="CENTER">9</TD>
+<TD ALIGN="CENTER">0.33</TD>
+<TD ALIGN="CENTER">32</TD>
+</TR>
+<TR><TD ALIGN="CENTER">CRC</TD>
+<TD ALIGN="CENTER">0.21</TD>
+<TD ALIGN="CENTER">0.32</TD>
+<TD ALIGN="CENTER">52</TD>
+<TD ALIGN="CENTER">0.34</TD>
+<TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">0.62</TD>
+<TD ALIGN="CENTER">82</TD>
+</TR>
+<TR><TD ALIGN="CENTER">IDCT</TD>
+<TD ALIGN="CENTER">0.25</TD>
+<TD ALIGN="CENTER">0.28</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">0.29</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">0.70</TD>
+<TD ALIGN="CENTER">141</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Rijndael</TD>
+<TD ALIGN="CENTER">0.23</TD>
+<TD ALIGN="CENTER">0.35</TD>
+<TD ALIGN="CENTER">52</TD>
+<TD ALIGN="CENTER">0.39</TD>
+<TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">0.58</TD>
+<TD ALIGN="CENTER">49</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Sobel</TD>
+<TD ALIGN="CENTER">0.18</TD>
+<TD ALIGN="CENTER">0.21</TD>
+<TD ALIGN="CENTER">17</TD>
+<TD ALIGN="CENTER">0.24</TD>
+<TD ALIGN="CENTER">14</TD>
+<TD ALIGN="CENTER">0.64</TD>
+<TD ALIGN="CENTER">167</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Viterbi</TD>
+<TD ALIGN="CENTER">0.33</TD>
+<TD ALIGN="CENTER">0.43</TD>
+<TD ALIGN="CENTER">30</TD>
+<TD ALIGN="CENTER">0.44</TD>
+<TD ALIGN="CENTER">2</TD>
+<TD ALIGN="CENTER">0.81</TD>
+<TD ALIGN="CENTER">84</TD>
+</TR>
+<TR><TD ALIGN="CENTER">Average</TD>
+<TD ALIGN="CENTER">-</TD>
+<TD ALIGN="CENTER">-</TD>
+<TD ALIGN="CENTER">28.4</TD>
+<TD ALIGN="CENTER">-</TD>
+<TD ALIGN="CENTER">6.7</TD>
+<TD ALIGN="CENTER">-</TD>
+<TD ALIGN="CENTER">79.3</TD>
+</TR>
+</TABLE>
+     
+<A NAME="tbl:overhead"></A>   </DIV></TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html178"
+  HREF="node15.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html176"
+  HREF="node12.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html170"
+  HREF="node13.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html179"
+  HREF="node15.html">Prediction of Error Locations</A>
+<B> Up:</B> <A NAME="tex2html177"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<B> Previous:</B> <A NAME="tex2html171"
+  HREF="node13.html">Error Prediction Report</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

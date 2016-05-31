@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Targeting large logic blocks</TITLE>
+<META NAME="description" CONTENT="Targeting large logic blocks">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node6.html">
+<LINK REL="previous" HREF="node4.html">
+<LINK REL="up" HREF="node4.html">
+<LINK REL="next" HREF="node6.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html89"
+  HREF="node6.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html87"
+  HREF="node4.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html81"
+  HREF="node4.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html90"
+  HREF="node6.html">Control flow handling for</A>
+<B> Up:</B> <A NAME="tex2html88"
+  HREF="node4.html">PeMM Characterization</A>
+<B> Previous:</B> <A NAME="tex2html82"
+  HREF="node4.html">PeMM Characterization</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00022100000000000000"></A><A NAME="subsubsec:splitblock"></A>
+<BR>
+Targeting large logic blocks
+</H3>
+PeMM performs a linear transformation of error masking probability from logic inputs to outputs, which is not the case for large logic blocks with internal data dependencies. To address such issue, larger circuits are decomposited into  logic sub-blocks with individual PeMMs. Figure <A HREF="#fig:split">3</A> indicates PeMM decomposition based on data dependencies, where the large logic block <I>alu_ex</I> is splitted into 3 sub-blocks. Signals <I>alu_in1</I> and <I>alu_in2</I> connect first two sub-blocks while <I>alu_out</I> connects the last two sub-blocks. PeMMs for sub-blocks are characterized individually. The intra token pool is used to keep the temporary tokens, which represent data with error probabilities, for processing on next logic sub-blocks.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:split"></A><A NAME="149"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 3:</STRONG>
+Decomposition of large logic unit using PeMM</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+    
+</DIV>
+   </TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

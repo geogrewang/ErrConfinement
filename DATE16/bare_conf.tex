@@ -1,0 +1,62 @@
+\documentclass[10pt, conference]{IEEEtran}
+
+\usepackage{graphicx}
+\DeclareGraphicsExtensions{.eps}
+%\usepackage{mathtools}
+\usepackage[cmex10]{amsmath}
+\usepackage{amssymb}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{subfigure}
+\usepackage{epstopdf}
+%\usepackage{listings}                   % for printing listings
+
+
+   \addtolength{\columnsep}{-0.1cm}
+   \addtolength{\oddsidemargin}{-0.6cm}
+   \addtolength{\evensidemargin}{-0.6cm}
+   \addtolength{\textwidth}{+1.2cm}
+   \addtolength{\textheight}{+1.2cm}
+   \addtolength{\topmargin}{-0.6cm}
+\renewcommand{\baselinestretch}{0.81}
+%   
+% \usepackage{graphicx}
+% \DeclareGraphicsExtensions{.eps}
+% \usepackage[cmex10]{amsmath}
+% \usepackage{algorithm}
+% \usepackage{algpseudocode}
+% \usepackage{subfigure}
+% \usepackage{slashbox}
+\input{macros}
+% correct bad hyphenation here
+%\hyphenation{op-tical net-works semi-conduc-tor}
+% \addtolength{\columnsep}{-0.2cm}
+% 
+\IEEEoverridecommandlockouts
+\begin{document}
+\title{A Low Overhead Error Confinement Method based on Application Statistical Characteristics}
+
+\author{\textit{Interactive presentation}}
+
+\maketitle
+\input{abstract}
+%George: commented them
+%\begin{IEEEkeywords}
+%Error Correction; Approximate Computing
+%\end{IEEEkeywords}
+
+\IEEEpeerreviewmaketitle
+\input{introduction}
+\input{theory}
+\input{qos_asip}
+%\input{data_approx}
+\input{experiments}
+\input{conclusion}
+
+\scriptsize
+%\addtolength{\itemsep}{0 pt}
+\renewcommand{\baselinestretch}{0.85}
+\bibliographystyle{ieeetr}
+\bibliography{./IEEEtranBST/IEEEabrv,relisa}
+
+\end{document}

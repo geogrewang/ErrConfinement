@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Error Representation</TITLE>
+<META NAME="description" CONTENT="Error Representation">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node11.html">
+<LINK REL="previous" HREF="node9.html">
+<LINK REL="up" HREF="node9.html">
+<LINK REL="next" HREF="node11.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html137"
+  HREF="node11.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html135"
+  HREF="node9.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html129"
+  HREF="node9.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html138"
+  HREF="node11.html">Token Tracking</A>
+<B> Up:</B> <A NAME="tex2html136"
+  HREF="node9.html">Approximate Error Prediction Framework</A>
+<B> Previous:</B> <A NAME="tex2html130"
+  HREF="node9.html">Approximate Error Prediction Framework</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00031000000000000000">
+Error Representation</A>
+</H2>
+In contrast to fault injection method in [<A
+ HREF="node17.html#WangZISQED13">7</A>] where the value of resources is changed dynamically, token is created as an abstract data structures which does not change the resource values. Instead, error probability is updated during token propagation. Error probability is initially set to 1 during token creation while fine-grained probability is set based on the approximated error granularity in section <A HREF="node8.html#subsubsec:finegrained">II-C</A>. When error probability is masked to 0 the token is removed. Hardware resource ID and memory array index are associated with each token so that the PeMM addresses the corresponding token correctly. Specific resources are possible to contain multiple <I>sub-tokens</I>, for instance the <I>instruction</I> register, which consists of multiple decoding fields such as <I>opcode</I>, <I>source</I> and <I>destination</I> operands. Due to various coding functionality so as the masking probabilities, such fields are treated as separated elements in the input vector of PeMM although located in the same resource.
+
+<P>
+<BR><HR>
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Control flow handling for Logic block</TITLE>
+<META NAME="description" CONTENT="Control flow handling for Logic block">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node7.html">
+<LINK REL="previous" HREF="node5.html">
+<LINK REL="up" HREF="node4.html">
+<LINK REL="next" HREF="node7.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html99"
+  HREF="node7.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html97"
+  HREF="node4.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html91"
+  HREF="node5.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html100"
+  HREF="node7.html">Inputs with Multiple Faults</A>
+<B> Up:</B> <A NAME="tex2html98"
+  HREF="node4.html">PeMM Characterization</A>
+<B> Previous:</B> <A NAME="tex2html92"
+  HREF="node5.html">Targeting large logic blocks</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00022200000000000000"></A><A NAME="subsubsec:controlflow"></A>
+<BR>
+Control flow handling for Logic block
+</H3>
+The other factor contributes to the inaccuracy of PeMM estimation is the dynamic control flow within logic blocks. The runtime circuits masking capability shows significant difference compared with purely random characterization. This can be seen from the behavioral description of circuits shown in Figure <A HREF="#fig:pemm_control">4</A>, where a 3-to-1 multiplexer is generated during logic synthesis for the if/else statements. During execution, various active path shows different PeMM for the same logic block which leads to exclusive elements in PeMM. Random characterization results in a PeMM of <!-- MATH
+ $[0.33\ 0.33\ 0.33]$
+ -->
+<IMG
+ WIDTH="109" HEIGHT="32" ALIGN="MIDDLE" BORDER="0"
+ SRC="img28.png"
+ ALT="$ [0.33\ 0.33\ 0.33]$">
+ indicating error probability on each path is statically masked to 33%. To increase accuracy, additional <I>helper_signal</I> is adopted to indicate active path, which dynamically fill the elements in PeMM during execution. Such approach reviews trade-off between accuracy of characterization and modeling efforts.
+
+<P>
+
+<DIV ALIGN="CENTER"><A NAME="fig:pemm_control"></A><A NAME="160"></A>
+<TABLE>
+<CAPTION ALIGN="BOTTOM"><STRONG>Figure 4:</STRONG>
+Control flow handling for PeMM</CAPTION>
+<TR><TD>
+<DIV ALIGN="CENTER">
+
+    
+</DIV>
+   </TD></TR>
+</TABLE>
+</DIV>
+
+<P>
+<BR><HR>
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

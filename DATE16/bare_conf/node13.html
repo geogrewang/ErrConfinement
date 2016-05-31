@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Error Prediction Report</TITLE>
+<META NAME="description" CONTENT="Error Prediction Report">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node14.html">
+<LINK REL="previous" HREF="node12.html">
+<LINK REL="up" HREF="node12.html">
+<LINK REL="next" HREF="node14.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html168"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html166"
+  HREF="node12.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html160"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html169"
+  HREF="node14.html">Accuracy Analysis in Error</A>
+<B> Up:</B> <A NAME="tex2html167"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<B> Previous:</B> <A NAME="tex2html161"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H2><A NAME="SECTION00041000000000000000">
+Error Prediction Report</A>
+</H2>
+Token tracking analysis is carried out on an assembly testbench consisting of algorithmic and memory access instructions. Tokens are created at different hardware resources where the error prediction reports are documented in Table <A HREF="#tbl:err_report">II</A>. For instance the first group shows that the created token with ID 1 expands into totally <IMG
+ WIDTH="20" HEIGHT="17" ALIGN="BOTTOM" BORDER="0"
+ SRC="img39.png"
+ ALT="$ 33$">
+ tokens dynamically. Only 8 tokens live until the end of simulation while the rest ones have been removed or overwritten. Token in processor core is stored into data memory for memory access instruction. On the contrary the token in second group results in one error in data memory although just 3 tokens are expanded. In the last group, although 6 tokens are expanded, no token has been stored into data memory so that no application-level errors are visible. Based on the error prediction reports the user can easily perform vulnerability analysis for specific faults in the architecture.
+
+<P>
+<BR><P></P>
+<DIV ALIGN="CENTER"><A NAME="477"></A>
+<TABLE>
+<CAPTION><STRONG>Table II:</STRONG>
+Example of Error Prediction Report</CAPTION>
+<TR><TD>  <DIV ALIGN="CENTER">=0.04cm
+
+        <TABLE CELLPADDING=3 BORDER="1">
+<TR><TD ALIGN="CENTER">Token</TD>
+<TD ALIGN="CENTER">Resource</TD>
+<TD ALIGN="CENTER">Array</TD>
+<TD ALIGN="CENTER">Created</TD>
+<TD ALIGN="CENTER">Word</TD>
+<TD ALIGN="CENTER" COLSPAN=8>Nibble-level Error Probability</TD>
+</TR>
+<TR><TD ALIGN="CENTER">ID</TD>
+<TD ALIGN="CENTER">Name</TD>
+<TD ALIGN="CENTER">Index</TD>
+<TD ALIGN="CENTER">Cycle</TD>
+<TD ALIGN="CENTER">Error (%)</TD>
+<TD ALIGN="CENTER" COLSPAN=8>(%) (LS Nibble-MS Nibble)</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13>Token in bit 6 for <I>insn</I> register of <I>FE/DC</I> pipe stage @ cycle 3</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13><!-- MATH
+ $\Downarrow$
+ -->
+<IMG
+ WIDTH="14" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$ \Downarrow$">
+</TD>
+</TR>
+<TR><TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">8</TD>
+<TD ALIGN="CENTER">100</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">100</TD>
+<TD ALIGN="CENTER">23.5</TD>
+<TD ALIGN="CENTER">1.48</TD>
+<TD ALIGN="CENTER">0.11</TD>
+<TD ALIGN="CENTER">0.005</TD>
+<TD ALIGN="CENTER">0.001</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">14</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">4</TD>
+<TD ALIGN="CENTER">9</TD>
+<TD ALIGN="CENTER">98.42</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">84.4</TD>
+<TD ALIGN="CENTER">32.5</TD>
+<TD ALIGN="CENTER">2.04</TD>
+<TD ALIGN="CENTER">0.13</TD>
+<TD ALIGN="CENTER">0.01</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">18</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">96.49</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">84.4</TD>
+<TD ALIGN="CENTER">32.5</TD>
+<TD ALIGN="CENTER">2.04</TD>
+<TD ALIGN="CENTER">0.13</TD>
+<TD ALIGN="CENTER">0.01</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">21</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">95.54</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">84.4</TD>
+<TD ALIGN="CENTER">32.5</TD>
+<TD ALIGN="CENTER">2.04</TD>
+<TD ALIGN="CENTER">0.13</TD>
+<TD ALIGN="CENTER">0.01</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">28</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">14</TD>
+<TD ALIGN="CENTER">50.87</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">50.2</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">30</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">15</TD>
+<TD ALIGN="CENTER">50.87</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">50.2</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">32</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">16</TD>
+<TD ALIGN="CENTER">56.54</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">68.7</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER">33</TD>
+<TD ALIGN="CENTER">dmem</TD>
+<TD ALIGN="CENTER">0x7FFF</TD>
+<TD ALIGN="CENTER">17</TD>
+<TD ALIGN="CENTER">54.27</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">49.6</TD>
+<TD ALIGN="CENTER">50.4</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13>Token in bit 1 for <I>WBV</I> register of <I>MEM/WB</I> pipe stage @ cycle 17</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13><!-- MATH
+ $\Downarrow$
+ -->
+<IMG
+ WIDTH="14" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$ \Downarrow$">
+</TD>
+</TR>
+<TR><TD ALIGN="CENTER">3</TD>
+<TD ALIGN="CENTER">dmem</TD>
+<TD ALIGN="CENTER">0x7FFF</TD>
+<TD ALIGN="CENTER">17</TD>
+<TD ALIGN="CENTER">100</TD>
+<TD ALIGN="CENTER">49.8</TD>
+<TD ALIGN="CENTER">50.2</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13>Token in bit 15 for <I>WBV</I> register of <I>EX/MEM</I> pipe stage @ cycle 9</TD>
+</TR>
+<TR><TD ALIGN="CENTER" COLSPAN=13><!-- MATH
+ $\Downarrow$
+ -->
+<IMG
+ WIDTH="14" HEIGHT="30" ALIGN="MIDDLE" BORDER="0"
+ SRC="img40.png"
+ ALT="$ \Downarrow$">
+</TD>
+</TR>
+<TR><TD ALIGN="CENTER">5</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">11</TD>
+<TD ALIGN="CENTER">100</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">100</TD>
+<TD ALIGN="CENTER">23.1</TD>
+<TD ALIGN="CENTER">1.5</TD>
+<TD ALIGN="CENTER">0.10</TD>
+<TD ALIGN="CENTER">0.01</TD>
+</TR>
+<TR><TD ALIGN="CENTER">6</TD>
+<TD ALIGN="CENTER">R</TD>
+<TD ALIGN="CENTER">7</TD>
+<TD ALIGN="CENTER">12</TD>
+<TD ALIGN="CENTER">98.42</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">0</TD>
+<TD ALIGN="CENTER">84.3</TD>
+<TD ALIGN="CENTER">32.4</TD>
+<TD ALIGN="CENTER">2.1</TD>
+<TD ALIGN="CENTER">0.14</TD>
+<TD ALIGN="CENTER">0.01</TD>
+</TR>
+</TABLE>
+     
+<A NAME="tbl:err_report"></A>   </DIV></TD></TR>
+</TABLE>
+</DIV><P></P>
+<BR>
+
+<P>
+The report also indicates word-level and nibble-level error probabilities. The two sets of error probabilities differ from each other for absolute values since they are calculated using separate word and nibble-level PeMMs respectively. It is noted that the errors are expanded into adjacent nibbles with reduced error probabilities due to the inter-nibble masking effects of algorithmic operations. 
+
+<P>
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html168"
+  HREF="node14.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html166"
+  HREF="node12.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html160"
+  HREF="node12.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html169"
+  HREF="node14.html">Accuracy Analysis in Error</A>
+<B> Up:</B> <A NAME="tex2html167"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<B> Previous:</B> <A NAME="tex2html161"
+  HREF="node12.html">Results in Reliability Estimation</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

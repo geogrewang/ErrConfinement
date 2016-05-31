@@ -1,0 +1,3 @@
+\section{Conclusion} \label{sec:conclusion}
+In this work, a low cost error confinement technique is proposed which exploits the statistical characteristics of target applications and replaces any erroneous data with the best available estimate of that data. The architecture of a RISC processor with custom instructions supporting proposed approach is presented. Further application-level studies by the proposed methodology and architecture will be presented in the future.
+

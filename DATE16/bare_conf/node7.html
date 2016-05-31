@@ -1,0 +1,70 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Inputs with Multiple Faults</TITLE>
+<META NAME="description" CONTENT="Inputs with Multiple Faults">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="previous" HREF="node6.html">
+<LINK REL="up" HREF="node4.html">
+<LINK REL="next" HREF="node8.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html107"
+  HREF="node8.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html105"
+  HREF="node4.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html101"
+  HREF="node6.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html108"
+  HREF="node8.html">Fine-grained PeMM</A>
+<B> Up:</B> <A NAME="tex2html106"
+  HREF="node4.html">PeMM Characterization</A>
+<B> Previous:</B> <A NAME="tex2html102"
+  HREF="node6.html">Control flow handling for</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H3><A NAME="SECTION00022300000000000000">
+Inputs with Multiple Faults</A>
+</H3>
+Multiple faults on the inputs of the circuit also affects PeMM characteristics. Matrix multiplication sums up the contribution of each input error after individual masking effects, which achieves good masking accuracy for non-algorithmic operations. For algorithmic operations multiple input faults can strongly vary the values of <!-- MATH
+ $M^{out_i}_{in_j}$
+ -->
+<IMG
+ WIDTH="46" HEIGHT="36" ALIGN="MIDDLE" BORDER="0"
+ SRC="img11.png"
+ ALT="$ M^{out_i}_{in_j}$">
+ compared with fault on single input, especially in the case of correlated faults which are completely or partially originated from the same fault. Correlated faults are possible to inversely affect each other and even cancel the resultant errors depending on the algorithmic operation, such as the case of XOR operator with bit-flip faults on both inputs. Detailed modeling of correlated faults using PeMM will be addressed in future work.
+
+<P>
+<BR><HR>
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

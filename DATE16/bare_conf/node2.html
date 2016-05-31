@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+
+<!--Converted with LaTeX2HTML 2008 (1.71)
+original version by:  Nikos Drakos, CBLU, University of Leeds
+* revised and updated by:  Marcus Hennecke, Ross Moore, Herb Swan
+* with significant contributions from:
+  Jens Lippmann, Marek Rouchal, Martin Wilck and others -->
+<HTML>
+<HEAD>
+<TITLE>Probabilistic Error Masking Matrix</TITLE>
+<META NAME="description" CONTENT="Probabilistic Error Masking Matrix">
+<META NAME="keywords" CONTENT="bare_conf">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+
+<META NAME="Generator" CONTENT="LaTeX2HTML v2008">
+<META HTTP-EQUIV="Content-Style-Type" CONTENT="text/css">
+
+<LINK REL="STYLESHEET" HREF="bare_conf.css">
+
+<LINK REL="next" HREF="node9.html">
+<LINK REL="previous" HREF="node1.html">
+<LINK REL="up" HREF="bare_conf.html">
+<LINK REL="next" HREF="node3.html">
+</HEAD>
+
+<BODY >
+<!--Navigation Panel-->
+<A NAME="tex2html50"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html48"
+  HREF="bare_conf.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html42"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html51"
+  HREF="node3.html">PeMM Definition</A>
+<B> Up:</B> <A NAME="tex2html49"
+  HREF="bare_conf.html">Fast, Approximate Error Prediction</A>
+<B> Previous:</B> <A NAME="tex2html43"
+  HREF="node1.html">Introduction</A>
+<BR>
+<BR>
+<!--End of Navigation Panel-->
+
+<H1><A NAME="SECTION00020000000000000000"></A> <A NAME="sec:pemm"></A>
+<BR>
+Probabilistic Error Masking Matrix
+</H1>
+Faults within logic circuits are masked with certain probability before propagating to the circuits outputs as visible errors. Such masking effects happen due to several reasons which can be the following:
+
+<P>
+
+<UL>
+<LI>Logic primitives performing algorithmic calculations have inherent ability of masking faults at input, giving unchanged/error-free output.
+</LI>
+<LI>Micro-architecture features such as inter-stage data bypass can neglect the faulty input by replacing it with fault free input as a feedback from other pipeline stages.
+</LI>
+<LI>Faulty resources of processor such as registers and memory elements can never be read by computational circuit, giving always a fault free output.
+</LI>
+<LI>The faulty value of storage element or wires are overwritten before being read.
+</LI>
+</UL>
+
+<P>
+PTM [<A
+ HREF="node17.html#KrishnaswamyVMH08">24</A>] calculates the error probability of circuits' output by considering the logic circuits as a black box with faults happened inside logic gates. The approach suffers from scalability problem for large circuits since the size of the PTM is <!-- MATH
+ $2^n \times 2^m$
+ -->
+<IMG
+ WIDTH="61" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img2.png"
+ ALT="$ 2^n \times 2^m$">
+ where n and m imply the total number of bits for inputs and outputs. Besides, for large scale circuits the derivation of PTM can be extremely time consuming since PTMs of individual logic gates needs to be accumulated.
+
+<P>
+We introduce <I>Probabilistic error Masking Matrix</I> (PeMM) to address the scalability issue, where the faults reside in circuit inputs.In contrast to PTM, PeMM has the size of <!-- MATH
+ $n \times m$
+ -->
+<IMG
+ WIDTH="47" HEIGHT="31" ALIGN="MIDDLE" BORDER="0"
+ SRC="img3.png"
+ ALT="$ n \times m$">
+ for a circuit with n bits input and m bits output. The size of matrix can be further reduced depending on the focusing scope of error existence. For instance, n and m are reduced to number of input and output signals when signal level error existence is considered.
+
+<P>
+<BR><HR>
+<!--Table of Child-Links-->
+<A NAME="CHILD_LINKS"><STRONG>Subsections</STRONG></A>
+
+<UL>
+<LI><A NAME="tex2html52"
+  HREF="node3.html">PeMM Definition</A>
+<LI><A NAME="tex2html53"
+  HREF="node4.html">PeMM Characterization</A>
+<UL>
+<LI><A NAME="tex2html54"
+  HREF="node5.html">Targeting large logic blocks</A>
+<LI><A NAME="tex2html55"
+  HREF="node6.html">Control flow handling for Logic block</A>
+<LI><A NAME="tex2html56"
+  HREF="node7.html">Inputs with Multiple Faults</A>
+</UL>
+<BR>
+<LI><A NAME="tex2html57"
+  HREF="node8.html">Fine-grained PeMM</A>
+</UL>
+<!--End of Table of Child-Links-->
+<HR>
+<!--Navigation Panel-->
+<A NAME="tex2html50"
+  HREF="node3.html">
+<IMG WIDTH="37" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="next"
+ SRC="file:/usr/share/latex2html/icons/next.png"></A> 
+<A NAME="tex2html48"
+  HREF="bare_conf.html">
+<IMG WIDTH="26" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="up"
+ SRC="file:/usr/share/latex2html/icons/up.png"></A> 
+<A NAME="tex2html42"
+  HREF="node1.html">
+<IMG WIDTH="63" HEIGHT="24" ALIGN="BOTTOM" BORDER="0" ALT="previous"
+ SRC="file:/usr/share/latex2html/icons/prev.png"></A>   
+<BR>
+<B> Next:</B> <A NAME="tex2html51"
+  HREF="node3.html">PeMM Definition</A>
+<B> Up:</B> <A NAME="tex2html49"
+  HREF="bare_conf.html">Fast, Approximate Error Prediction</A>
+<B> Previous:</B> <A NAME="tex2html43"
+  HREF="node1.html">Introduction</A>
+<!--End of Navigation Panel-->
+<ADDRESS>
+Zheng Wang A Chattopadhyay
+2014-07-16
+</ADDRESS>
+</BODY>
+</HTML>

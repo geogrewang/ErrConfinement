@@ -1,0 +1,234 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                  (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                  **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   Units:
+   This file defines all custom units
+   with the purpose of structuring the generated RTL code
+   into modules.
+*/
+
+RESOURCE {
+
+  /* Unit with fetch/prefetch logic & local registers,
+     spans over pipeline stages PF and FE */
+  UNIT U_PROGFETCH {
+    OPERATIONS (
+		fetch_addr_gen,
+		fetch,
+		fetch_buffer_sm
+		);
+    REGISTERS  (
+		IS_RESET,
+		FETCH_BUF<1>,
+		FETCH_BUF<2>,
+		FETCH_BUF<3>,
+		FETCH_BUF_RP,
+		PAR
+		);
+    SIGNALS    (
+		is_32bit_insn,
+		is_fetch_buffer_full
+		);
+    PIPELINE_REGISTERS (
+			PF/FE.pc
+			);
+  };
+
+  /* Unit with bypass logic in stage DC,
+     which writes to operand pipeline registers*/
+  UNIT U_BYPASS_DC IN pipe.DC {
+    OPERATIONS (
+		bypass_src1_dc_int,
+		bypass_src1_dc_copy,
+		bypass_src0_dc
+		);
+    SIGNALS    (
+		signal_bp_val_src1_dc
+		);
+    PIPELINE_REGISTERS (
+			DC/EX.bp_idx_src1,
+			DC/EX.bp_idx_src0
+			);
+    
+  };
+  
+  /* Unit with bypass logic in stage EX,
+     which writes to ALU inputs */
+  UNIT U_BYPASS_EX IN pipe.EX {
+    OPERATIONS (
+		bypass_src1_ex,
+		bypass_src0_ex,
+		nobypass_src1_ex,
+		nobypass_src0_ex
+		);
+    SIGNALS    (
+		signal_bp_val_src1_ex,
+		signal_bp_val_src0_ex
+		);
+  };
+
+
+  /* Unit with control logic in stage DC,
+     which writes to the branch flag & branch address signals */
+  UNIT U_CONTROL_DC IN pipe.DC {
+    OPERATIONS (
+		jmpi,
+		jmpil,
+		jmpi_uncond,
+		jmpi_cond,
+		jmpr_uncond,
+		callr_uncond,
+		jmpil_uncond,
+		jmpil_cond,
+		callil_uncond,
+		link_dc,
+		bpc_adder,
+		bypass_bpc_dc
+		);
+    SIGNALS    (
+		bset,
+		bpc,
+		bpc_adder_offset
+		);
+  };
+
+  /* Unit with compare logic in stage DC */
+  UNIT U_COMPARE_DC IN pipe.DC {
+    OPERATIONS (
+		cmp_reg,
+		cmp_simm,
+		cmp_uimm
+		);
+  };
+
+  /* Unit with compare logic in stage EX */
+  UNIT U_COMPARE_EX IN pipe.EX {
+    OPERATIONS (
+		cmp_ex
+		);
+    REGISTERS  (
+		CC
+		);
+    SIGNALS    (
+		compare_result,
+		is_cmp_insn
+		);
+  };
+
+  /* Unit with ALU logic in stage DC */
+  UNIT U_ALU_DC IN pipe.DC {
+    OPERATIONS (
+		alu,
+		mul,
+		alui,
+		aluis,
+		aluiu,
+		aluil,
+		aluils,
+		aluilu,
+		ldil_misc,
+		shifti,
+		cmov_movcc,
+		cmov_imm,
+		movcc
+		);
+    PIPELINE_REGISTERS (
+			DC/EX.alu_op
+			);
+  };
+
+  /* Unit with ALU logic in stage EX */
+  UNIT U_ALU_EX IN pipe.EX {
+    OPERATIONS (
+		alu_ex,
+		cmov_ex
+		);
+    SIGNALS    (
+		alu_out,
+		is_alu_insn,
+		cmov_active
+		);
+  };  
+
+  /* Unit with Multiplier in stage EX */
+  UNIT U_MUL_EX IN pipe.EX {
+    OPERATIONS (
+		mul_ex
+		);
+  };  
+
+  /* Unit with Memory Load/Store logic in stage DC */
+  UNIT U_LDST_DC IN pipe.DC {
+    OPERATIONS (
+		ld,
+		ldl,
+		st,
+		stl
+		);
+    PIPELINE_REGISTERS (
+			DC/EX.offset,
+			DC/EX.ldst_type
+			);
+  };
+
+  /* Unit with Memory Load/Store logic in stage EX */
+  UNIT U_LDST_EX IN pipe.EX {
+    OPERATIONS (
+		address_generation,
+		st_mem,
+		ld_mem_req
+		);
+    SIGNALS    (
+		mem_ldst_address
+		);
+    PIPELINE_REGISTERS (
+			EX/MEM.address,
+			EX/MEM.ldst_type
+			);
+  };
+
+
+  /* Unit with Memory Load/Store logic in stage MEM */
+  UNIT U_LDST_MEM IN pipe.MEM {
+    OPERATIONS (
+		ld_mem
+		);
+  };
+
+  /* Unit for PC update in stage MEM */
+  UNIT U_PC_MEM IN pipe.MEM {
+    OPERATIONS (
+		update_pc
+		);
+    REGISTERS  (
+		PC
+		);
+  };
+
+
+  /* Unit with writeback logic */
+  UNIT U_WRITEBACK IN pipe.WB {
+    OPERATIONS (
+		writeback_dst0
+		);
+  };
+
+  /* Unit with logic outside the pipeline */
+  UNIT U_NOPIPE {
+    OPERATIONS (
+		forward_cc
+		);
+  };
+
+}

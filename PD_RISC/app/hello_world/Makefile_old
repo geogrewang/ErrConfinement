@@ -1,0 +1,58 @@
+# PLEASE DEFINE THE BASE DIRECTORY OF YOUR MODEL HERE:
+MODEL   = ../../
+
+LISATEK = $(shell lmake --ltinst)
+VERSION = $(shell lmake --ver)
+TOOLS   = $(MODEL)/$(VERSION)/bin/
+ifeq ($(COMPILER), cosy)
+# set COMPILER to cosy if you want to use the COSY based compiler
+CC      = $(TOOLS)/lcc
+INCLUDE = -I$(RUNTIME)/include -I$(MODEL)/$(VERSION)/cosy/gen
+CFLAGS  = -gdwarf2 -Wf,-fdelay-slot-fill -DTIME -B$(TOOLS)
+LDFLAGS = -Wl,--entry=0,$(RUNTIME)/linker.cmd,$(RUNTIME)/boot/boot.o -L$(RUNTIME)/lib -lcosy -B$(TOOLS)
+RUNTIME = $(MODEL)/contrib/librt
+else
+# by default we will use the llvm/clang based compiler
+CC      = $(TOOLS)/lcc-clang
+INCLUDE =
+CFLAGS  = -g -S -emit-llvm
+#CFLAGS  = -g
+#CFLAGS  = -O3 -fomit-frame-pointer 
+#CFLAGS = -g -O3
+LDFLAGS =
+endif
+AS      = $(TOOLS)/lasm
+LD      = $(TOOLS)/llnk
+SIM_DIR = $(MODEL)/contrib/pdriscrun
+
+#PLEASE ADD INCLUDE AND CFLAGS TO YOUR COMMAND
+
+# PLEASE ADD LDFLAGS TO YOUR LINKER COMMAND
+
+BIN  = hello_world.out
+OBJS = main.o
+
+all: $(BIN)
+
+$(BIN): $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS)
+%.o: %.c
+	$(CC) -c -o $@ $(CFLAGS) $(INCLUDE) $<
+
+%.s: %.c
+	$(CC) -S -o $@ $(CFLAGS) $(INCLUDE) $<
+
+clean:
+	rm -f *.o
+	rm -f *~
+	rm -f $(BIN)
+
+distclean:
+	rm -f *.o
+	rm -f *~
+
+debug:
+	pdbg -a $(MODEL)$(VERSION)/lib/architecture.so -e $(BIN)
+run:
+	make -C $(SIM_DIR)
+	$(SIM_DIR)/run $(BIN)

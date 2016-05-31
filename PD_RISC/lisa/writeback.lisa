@@ -1,0 +1,39 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+
+#include "inc/defines.h"
+
+/**
+   Writeback:
+   This file defines the register writeback
+   functionality of the writeback stage.
+*/
+
+
+/**
+   WRITEBACK VALUE
+*/
+
+OPERATION writeback_dst0 IN pipe.WB
+{
+  BEHAVIOR
+    {
+      if (IN.data_dst0_valid) {
+	uint32 dst=IN.bp_idx_dst0.to_uint32();
+	COMPILER_DO_HIDDEN_ACCESS(R, dst) = IN.data_dst0;
+      }
+    }
+}
+
+

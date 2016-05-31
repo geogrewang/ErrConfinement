@@ -1,0 +1,287 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   Control:
+   This file defines all the control (branch and call)
+   instructions. 
+*/
+
+#include "inc/defines.h"
+#include "inc/alu_defines.h"
+
+RESOURCE {
+  int32  bpc_adder_offset;
+}
+
+INSTRUCTION jmpi IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP addr   = { addr12 };
+      GROUP opcode = { jmpi_uncond || jmpi_cond };
+      INSTANCE bpc_adder;
+    }
+  CODING { 0b100 opcode addr }
+  SYNTAX { opcode ~" " addr }
+
+  DOCUMENTATION("CONTROL: direct branch to immediate address (encoded as 12-bit signed offset)"){}
+
+  BEHAVIOR
+    {
+      bpc_adder_offset = SIGN_EXTEND_12(addr);
+    }
+  ACTIVATION { opcode, bpc_adder }
+
+  SWITCH (opcode)
+  {
+    CASE jmpi_uncond: {
+      LLVM MATCH JMP {
+	LET { isBranch=1, isTerminator=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1 }
+	INS { addr }
+	//@ FIXME: CODE { br $addr }
+      }
+    }
+    CASE jmpi_cond:   {
+      LLVM MATCH BEQ {
+	LET { isBranch=1, isTerminator=1, hasDelaySlot=1, isBarrier=0, hasCtrlDep=1, Uses=[CC] }
+	INS { addr }
+	//CODE { node_beq $addr }
+      }
+    }
+  }
+}
+
+INSTRUCTION jmpr IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP src = { reg };
+      GROUP opcode = { jmpr_uncond || callr_uncond };
+      INSTANCE bypass_src1_dc_int, bypass_bpc_dc;
+    }
+
+  CODING { 0b1010000 opcode src 0bxxxx }
+  SYNTAX { opcode ~" " src }
+  
+
+  BEHAVIOR {
+    COMPILER_READ(R[src]);
+    signal_bp_idx_src1_dc=src;
+  }
+  
+  DOCUMENTATION("CONTROL: indirect branch to address in register"){}
+
+  ACTIVATION { opcode, bypass_src1_dc_int, bypass_bpc_dc }
+
+  SWITCH (opcode)
+  {
+    CASE jmpr_uncond:     {
+      LLVM {
+	MATCH JMP_R {
+	  LET { isBranch=1, isIndirectBranch = 1, isTerminator=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1 }
+	  CODE { brind $src }
+	      }
+	MATCH RET {
+	  LET { isReturn=1, isTerminator=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1 }
+		SYNTAX { jmpr(src=reg(idx=15)) }
+		CODE { retflag }
+	}
+      }
+    }
+    CASE callr_uncond:   {
+      LLVM MATCH CALL_R {
+	LET { isCall=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1,
+	    Defs = [@CallerSaveList@,@RAR@,CC], Uses=[@SP@]}
+	INS { src, "variable_ops" }
+      }
+    }
+  }
+}
+
+INSTRUCTION jmpil IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP addr = { addr24 };
+      GROUP opcode = { jmpil_uncond || jmpil_cond || callil_uncond };
+      INSTANCE bpc_adder;
+    }
+  CODING { 0b1110 opcode addr }
+  SYNTAX { opcode ~" " addr }
+
+  DOCUMENTATION("CONTROL: direct branch (long) to immediate address (encoded as 24-bit signed offset)"){}
+
+  BEHAVIOR
+    {
+      bpc_adder_offset = SIGN_EXTEND_24(addr);
+    }
+  ACTIVATION { opcode, bpc_adder }
+
+  SWITCH (opcode)
+  {
+    CASE jmpil_uncond:     {
+      LLVM MATCH JMP_LONG {
+	LET { isBranch=1, isTerminator=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1 }
+	INS { addr }
+	CODE { br $addr }
+      }
+    }
+    CASE jmpil_cond:   {
+      LLVM MATCH BEQ_LONG {
+	LET { isBranch=1, isTerminator=1, hasDelaySlot=1, isBarrier=0, hasCtrlDep=1, Uses=[CC] }
+	INS {  addr }
+	CODE { node_beq $addr }
+      }
+    }
+    CASE callil_uncond:   {
+      LLVM MATCH CALL {
+	LET { isCall=1, hasDelaySlot=1, isBarrier=1, hasCtrlDep=1,
+	    Defs = [@CallerSaveList@, @RAR@,CC], Uses=[@SP@] }
+	INS { addr24:addr, "variable_ops" }
+      }
+    }
+  }
+}
+
+OPERATION jmpi_uncond IN pipe.DC
+{
+  CODING { 0b0 }
+  SYNTAX { "b" }
+  BEHAVIOR
+    {
+      bset = true; 
+    }
+  DOCUMENTATION { Branch unconditionally. }
+}
+
+OPERATION jmpi_cond IN pipe.DC
+{
+  CODING { 0b1 }
+  SYNTAX { "bcc" }
+  BEHAVIOR
+    {
+      COMPILER_READ(CC);
+      bset = compare_result;
+    }
+  DOCUMENTATION { Branch on condition CC. }
+}
+
+OPERATION jmpr_uncond IN pipe.DC
+{
+  CODING { 0b0 }
+  SYNTAX { "b" }
+  BEHAVIOR
+    {
+      bset = true; 
+    }
+  DOCUMENTATION { Branch unconditionally. }
+}
+
+OPERATION callr_uncond IN pipe.DC
+{
+  DECLARE {
+    INSTANCE link_dc;
+  }
+  CODING { 0b1 }
+  SYNTAX { "call" }
+  BEHAVIOR
+    {
+      bset = true;
+    }
+  ACTIVATION { link_dc }
+  DOCUMENTATION { Branch-and-link unconditionally, storing address of the following instruction in R[15].}
+}
+
+
+OPERATION jmpil_uncond IN pipe.DC
+{
+  CODING { 0b00 }
+  SYNTAX { "b24" }
+  BEHAVIOR
+    {
+      bset = true; 
+    }
+  DOCUMENTATION { Branch unconditionally.}
+}
+
+OPERATION jmpil_cond IN pipe.DC
+{
+  CODING { 0b01 }
+  SYNTAX { "bcc24" }
+  BEHAVIOR
+    {
+      COMPILER_READ(CC);
+      bset = compare_result;
+    }
+  DOCUMENTATION { Branch on condition CC. }
+}
+
+OPERATION callil_uncond IN pipe.DC
+{
+  DECLARE {
+    INSTANCE link_dc;
+  }
+  CODING { 0b10 }
+  SYNTAX { "call" }
+  BEHAVIOR
+    {
+      bset = true;
+    }
+  ACTIVATION { link_dc }
+  DOCUMENTATION { Branch-and-link unconditionally, storing address of the following instruction in R[15].}
+}
+
+OPERATION bypass_bpc_dc IN pipe.DC
+{
+  DECLARE
+    {
+      REFERENCE src;
+    }
+  BEHAVIOR {
+    if (BYPASS_ACTIVE(is_alu_insn,EX.IN.bp_idx_dst0,src))
+      bpc=alu_out;   /* direct feedback from ALU */
+    else
+      bpc=signal_bp_val_src1_dc; /* direct feedback from src1 bypass in DC stage */
+  }
+}
+
+OPERATION bpc_adder IN pipe.DC
+{
+  BEHAVIOR {
+    bpc = IN.pc + bpc_adder_offset;
+  }
+}
+
+OPERATION link_dc IN pipe.DC
+{
+  DECLARE {
+    INSTANCE nobypass_src0_ex;
+    INSTANCE nobypass_src1_ex;
+    INSTANCE alu_ex;
+    INSTANCE writeback_dst0;
+  }
+  BEHAVIOR
+    {
+      COMPILER_WRITE(R[15])
+      OUT.bp_idx_dst0=15;
+      /* use alu to compute return address */
+      OUT.alu_op = ALU_OP_ADD;
+      /* first operand is the current address */
+      OUT.operand_src1 = IN.pc; /* address of _this_ call instruction */
+      /* second operand is the address increment in 16-bit */
+      OUT.operand_src0 = (IN.insn32 ? 2 : 1) /* size of _this_ call instruction */
+	+ (is_32bit_insn ? 2 : 1); /* size of (delay slot) instruction that is currently in FE stage */
+    }
+  ACTIVATION { nobypass_src0_ex, nobypass_src1_ex, alu_ex, writeback_dst0 }
+}

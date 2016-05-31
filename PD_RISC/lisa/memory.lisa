@@ -1,0 +1,63 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                    (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**	
+   Memory architecture:
+   This file defines the core memory subsystem.
+   If changes are applied here they have to be
+   reflected also in the range definiton file
+   memory_cfg.h 
+   
+*/
+
+
+#include "inc/defines.h"
+#include "inc/memory_cfg.h"
+
+RESOURCE
+{
+  /* Havard memory map for program and data memory*/
+  /* Program memory is 16-bits and is divided into upper and lower pages
+     This allows for a single access to a full 32-bit word on every cycle */
+  MEMORY_MAP
+    {
+      PROGRAM_MEMORY_BYTES(2);
+      PROGRAM_MEMORY_PAGE(0);
+      PAGE(0),RANGE(PMEM_START, PMEM_END) -> prog_meml[(31..0)];
+      PAGE(1),RANGE(PMEM_START, PMEM_END) -> prog_memh[(31..0)];
+      PAGE(2),RANGE(DMEM_START, DMEM_END) -> data_mem[(31..2)];
+    }
+  
+  MemR1 prog_memh
+  {
+    ADDR_WIDTH(PMEM_ADDR_WIDTH);
+    DATA_WIDTH(16);
+    RD_LATENCY(1);
+  };
+  
+  MemR1 prog_meml
+  {
+    ADDR_WIDTH(PMEM_ADDR_WIDTH);
+    DATA_WIDTH(16);
+    RD_LATENCY(1);
+  };
+  
+  MemC1 data_mem
+  {
+    ADDR_WIDTH(DMEM_ADDR_WIDTH);
+    DATA_WIDTH(32);
+    RD_LATENCY(1);
+    MASK_WIDTH(32);
+  };
+  
+}

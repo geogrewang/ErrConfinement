@@ -1,0 +1,68 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   TRAP:
+   This file contains the trap- (syscall-) instruction
+   that is forwarding syscalls initiated by the
+   C-library on the target to the host machine;
+   see implementation of manage_sycall() in sycall.cpp
+*/
+
+OPERATION trapi IN  pipe.DC
+{
+  DECLARE
+    {
+      LABEL imm;
+    }
+  CODING { 0b1[14] imm=0bx[16] }
+  SYNTAX { "trap" ~" " SYMBOL((imm=#X16)=#X16) }
+  BEHAVIOR
+    {
+      /*
+	The switch statement allows for future  
+	if further traps are needed.
+      */
+      switch(imm)
+	{
+	  // case 0: break;
+	  // case 1: break;
+	  // case 2: break;
+	  // case 3: break;
+	  // case 4: break;
+
+	case 0:
+#ifndef LT_PROCESSOR_GENERATOR
+	  manage_syscall(); 
+#endif
+	  break;
+
+	case 1:
+#ifndef LT_PROCESSOR_GENERATOR
+	  dump_cycle(); 
+#endif
+	  break;
+	  
+	case 42:
+#ifndef LT_PROCESSOR_GENERATOR
+	  newlib_manage_syscall(); 
+#endif
+	  break;
+
+	default:
+	  break;
+	}    
+    }
+  DOCUMENTATION ("SYSCALL (TRAP Instruction): TRAP nr") {Forward syscalls to the host machine.
+							Used primarily by C-Library functions.}
+}

@@ -1,0 +1,431 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                  (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                  **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/** 
+This file defines the processor register resources,
+fetch logic and the instrucion-set root.
+*/
+
+/* Include a file with type definitions and macros*/
+/* They can be used in the behavior and resource section then */
+/* These defines will be considered by the preprocessor
+that goes over the model*/
+#include "inc/defines.h"
+#include "inc/memory_cfg.h"
+
+
+/* Specify a version string which is contained later
+in the generated tools */
+VERSION("PD_RISC_32p6, H-2013.06-SP3")
+
+/*==================================================*/
+/* Processor Resource Description                   */
+/*==================================================*/
+
+RESOURCE
+{
+  /* Register file with 16 registers      */
+  REGISTER         uint32 R[0..15];
+  
+  /* Program counter register*/
+  PROGRAM_COUNTER  uint32 PC;
+  
+  
+  /* Stack pointer for profiling */
+  /* We need one
+   * register which changes at a constant offset from the
+   * start of a function.  */
+  STACK_POINTER    TClocked<uint32> SP ALIAS R[14];
+
+
+  /* fetch buffer registers & control signal */
+  REGISTER         uint16          FETCH_BUF<1..3>; /* 3 x 16-bit fetch buffer  */
+  REGISTER         unsigned bit[2] FETCH_BUF_RP;    /* read pointer             */
+  REGISTER         uint32          PAR;             /* program address register */
+  bool is_fetch_buffer_full;
+  
+  /* bset and bpc are signals that will immediately be fed
+     back from downstream cycles to allow immediate change
+     of address to branch.  This will eliminate the need for
+     a flush on a branch
+  */
+  bool   bset;
+  uint32 bpc;
+  bool   is_32bit_insn;
+
+  uint32          signal_bp_val_src1_dc;
+  unsigned bit[4] signal_bp_idx_src1_dc;
+  uint32          signal_bp_val_src1_ex;
+
+  unsigned bit[4] signal_bp_idx_src0_dc;
+  uint32          signal_bp_val_src0_ex;
+  
+  /* This register is needed by prefetch to make sure branch signals are ignored on 
+     first cycle (they are not valid yet)
+  */
+  REGISTER bool	IS_RESET;
+  
+  /* 6 stage pipeline - PF stage generates program fetch address. FE stage does memory 
+     fetch and DC stage does memory decode. This allows a complete cycle for program
+     memory access and can be used for higher frequency designs.  It will cause one
+     cycle of delay for branch instructions (delay slot), which may be able to be
+     filled by the compiler.
+  */
+  PIPELINE         pipe = { PF ; FE; DC ; EX ; MEM; WB };
+  
+  /* A pipeline register to pass data through the pipeline */
+  PIPELINE_REGISTER IN pipe
+  {
+    PROGRAM_COUNTER uint32 pc; /* the address of the instruction */
+    bool insn32;               /* current instruction is 32 bits */
+    
+    uint16 insn0;              /* first 16-bit instruction register */
+    uint16 insn1;              /* second 16-bit instruction register */
+    
+    unsigned bit[4] bp_idx_src0;  /* operand 1 register index (as source register) */
+    uint32 operand_src0;          /* operand 1 value */
+
+    unsigned bit[4] bp_idx_src1;  /* operand 2 register index */
+    uint32 operand_src1;          /* operand 2 value */
+
+    unsigned bit[4] bp_idx_dst0;  /* operand destination index */
+    uint32  data_dst0;          /* writeback value */
+    bool    data_dst0_valid;    /* indicates whether data_dst0 contains meaningful data (e.g. FALSE for compare-reg-reg) */
+    
+    unsigned bit[4] alu_op;    /* alu specific operation */
+    
+    int16  offset;             /* signed address offset */
+    uint32 address;            /* data memory address */
+    
+    
+    unsigned bit[3] ldst_type; /* type of load/store instruction */
+  };
+ 
+}
+
+/* reset behavior of the processor */
+OPERATION reset
+{
+  BEHAVIOR
+    {
+      /* C Behavior Code to reset all the processor
+	 resources to a well defined state */
+      int i;
+      
+      /* Zero register file */
+      for (i = 0 ; i < 16 ; i++)
+	{
+	  R[i] = 0;
+	}
+
+      /* clear fetch buffer logic */
+      for (i = 1 ; i < 4 ; i++)
+	{
+	  FETCH_BUF<i> = 0;
+	}
+      FETCH_BUF_RP = 0;
+      PAR = 0;
+
+      CC=false; 
+      
+      /* Clear the entire pipeline */
+      PIPELINE(pipe).flush();
+      
+      PC   = 0;
+      IS_RESET = true;
+      
+      EN_PAT=false;
+      // initializes system call functions - also sets breakpoint at exit
+      reset_syscall();
+    }
+}
+
+OPERATION main
+{
+  /* Operation main is triggered every control step (clock) */
+  DECLARE
+    {
+      INSTANCE fetch_addr_gen;
+      INSTANCE forward_cc;
+    }
+  
+  BEHAVIOR
+    { 
+      /* no behavior in main is required */
+    } 
+  
+  ACTIVATION {
+    fetch_addr_gen,
+    forward_cc
+  }
+}
+
+OPERATION fetch_addr_gen IN pipe.PF
+{
+  DECLARE { INSTANCE fetch, fetch_buffer_sm, update_pc; }
+
+  BEHAVIOR
+    {
+      unsigned bit[PMEM_ADDR_WIDTH_PLUS_1] req_rd_address_pm; /* Address of program memory request read */
+      unsigned bit[PMEM_ADDR_WIDTH] prog_memh_addr;
+      unsigned bit[PMEM_ADDR_WIDTH] prog_meml_addr;
+
+      uint32 next_pc;
+      
+      /* Check if first cycle after reset - don't check branch on (first cycle) */
+      if (IS_RESET)
+	{
+	  IS_RESET = false;
+	  req_rd_address_pm = 0;
+	  next_pc = 0;
+	}
+      /* Not first cycle. Check if the branch flag register is set */
+      else 
+	{
+	  if (bset)
+	    { 
+	      /* Branch, get next instruction address from the branch location*/
+	      req_rd_address_pm = bpc;
+	      next_pc = bpc;
+	    }
+	  else
+            {	
+	      /* fetch address: always fetch 32-bit */
+	      req_rd_address_pm = PAR + 2;
+	      /* actual program address: increment depending on size of current instruction in FE stage */
+	      next_pc = FE.IN.pc + (is_32bit_insn ? 2 : 1);
+            }
+        }
+      
+      /* always put actual address of current instruction into pipeline */
+      OUT.pc = next_pc;
+
+      /* but do not update PAR if fetch buffer is full */
+      /* (perform a dummy access in this cycle, and then use the same address in the next cycle) */
+      if (!(is_fetch_buffer_full) || bset ) {
+	PAR = req_rd_address_pm.to_uint32();
+      }
+
+      /* Initiate read to program memory */
+      prog_memh_addr=req_rd_address_pm >> 1;
+      prog_meml_addr=prog_memh_addr;
+	  
+      if ((req_rd_address_pm&0x1)==1)
+	prog_meml_addr+=1;
+      
+      /* Request read on synchronous memories*/
+      prog_memh.setAddress_r0(prog_memh_addr);
+      prog_meml.setAddress_r0(prog_meml_addr);
+    }
+  
+  ACTIVATION  { 
+    update_pc,
+    fetch_buffer_sm,
+    fetch
+  }
+}
+
+OPERATION fetch_buffer_sm IN pipe.FE
+{
+  BEHAVIOR {
+      /* fetch buffer state machine */
+
+      /* increment read pointer if current instruction is 16-bit */
+      /* when full, decrement read pointer by 2 (32-bit) or 1 (16-bit) */
+      /* when branch active, always go back to 0 */
+
+      if (bset) {
+	FETCH_BUF_RP = 0;
+      } else {
+	switch(FETCH_BUF_RP.to_uint32(0,2)) {
+	case 0:
+	  FETCH_BUF_RP = ( is_32bit_insn ? 0 : 1 );
+	  break;
+	case 1:
+	  FETCH_BUF_RP = ( is_32bit_insn ? 1 : 2 );
+	  break;
+	case 2:
+	  FETCH_BUF_RP = ( is_32bit_insn ? 2 : 3 );
+	  break;
+	case 3:
+	  FETCH_BUF_RP = ( is_32bit_insn ? 1 : 2 );
+	  break;
+	}
+      }
+  }
+}
+
+OPERATION fetch IN pipe.FE
+{
+  DECLARE { INSTANCE decode; }
+  
+  BEHAVIOR
+    {
+      unsigned bit [16]   prog_memh_data;
+      unsigned bit [16]   prog_meml_data;
+      
+      uint16   lcl_fetch_insn_hi;
+      uint16   lcl_fetch_insn_lo;
+      uint16   lcl_decode_insn_hi;
+      uint16   lcl_decode_insn_lo;
+
+      bool     lcl_is_32bit_insn;
+      bool     lcl_is_fetch_buffer_full;
+      
+      /* read the instruction */
+      
+      /* read data from program memory */
+      prog_memh.getData_r0(prog_memh_data);
+      prog_meml.getData_r0(prog_meml_data);
+      
+      
+      /* lcl_fetch_insn_hi shall contain the MSB */
+      if ((PAR & 0x1)==1)
+        {
+	  lcl_fetch_insn_lo=prog_meml_data.to_uint32(0,16);
+	  lcl_fetch_insn_hi=prog_memh_data.to_uint32(0,16);
+        }
+      else
+        {
+	  lcl_fetch_insn_lo=prog_memh_data.to_uint32(0,16);
+	  lcl_fetch_insn_hi=prog_meml_data.to_uint32(0,16);
+        }
+      
+      /* update fetch buffer, unless full (RP==3) */
+      if (FETCH_BUF_RP != 3) { 
+	/* save currently fetched data */
+	FETCH_BUF<1> = lcl_fetch_insn_lo;
+	FETCH_BUF<2> = lcl_fetch_insn_hi;
+	/* save previously fetched data */
+	FETCH_BUF<3> = FETCH_BUF<1>;
+      }
+
+      /* select instruction to be decoded, depending on read pointer */
+      switch(FETCH_BUF_RP.to_uint32(0,2)) {
+      case 0:
+	lcl_decode_insn_hi = lcl_fetch_insn_hi;
+	lcl_decode_insn_lo = lcl_fetch_insn_lo;
+	break;
+      case 1:
+	lcl_decode_insn_hi = FETCH_BUF<1>;
+	lcl_decode_insn_lo = lcl_fetch_insn_hi;
+	break;
+      case 2:
+	lcl_decode_insn_hi = FETCH_BUF<2>;
+	lcl_decode_insn_lo = FETCH_BUF<1>;
+	break;
+      case 3:
+	lcl_decode_insn_hi = FETCH_BUF<3>;
+	lcl_decode_insn_lo = FETCH_BUF<2>;
+	break;
+      }
+
+      /* pre-decode 16-bit vs 32-bit instruction */
+      /* two leading "1" bits indicate 32-bit instruction */
+      if ((lcl_decode_insn_hi >>14) == 0x3) {
+	lcl_is_32bit_insn = true;
+      }
+      else {
+	lcl_is_32bit_insn = false;
+      }
+      /* put this information into the pipeline */
+      is_32bit_insn = lcl_is_32bit_insn; // immediate signal
+      OUT.insn32    = lcl_is_32bit_insn; // pipeline register
+
+      /* fetch buffer is full: (FETCH_BUF_RP == 2) AND current instruction is 16-bit */
+      /* i.e. next readpointer value would be 3 */
+      lcl_is_fetch_buffer_full = ((FETCH_BUF_RP.to_uint32(0,2) == 2) && !(lcl_is_32bit_insn));
+
+      /* if the fetch buffer is full, don't increment program counter */
+      /* -> give direct feedback to PF stage                          */
+      is_fetch_buffer_full = lcl_is_fetch_buffer_full;
+
+      /* forward selected instructions into the decode stage */
+      OUT.insn0=lcl_decode_insn_hi;
+      OUT.insn1=lcl_decode_insn_lo;
+    }
+  
+  ACTIVATION { decode }
+}
+
+
+/* define top level instruction groups */
+
+#define ROOT16 	 { alu || mul || alui || shifti || ld  || st || jmpi || jmpr || cmp || cmov_movcc || nop \
+                }
+#define ROOT32 { jmpil || ldl || stl || aluil || chk_ld || en_parity_st || dis_parity_st || set_data \
+                || trapi \
+                }
+
+/* The operation decode is now assigned to the DC stage. This assignment is necessary to
+   define the appropriate timing for the execution of this operation */
+OPERATION decode IN pipe.DC
+{ 
+  DECLARE
+    {
+      GROUP insn_set_16 = { root16 };
+      GROUP insn_set_32 = { root32 };
+      ENUM  E_insn_set  = { ID_insn_set_32, ID_insn_set_16 };
+    }
+  
+  SWITCH (E_insn_set)
+    {
+      CASE ID_insn_set_32:
+      {
+	CODING AT ( IN.pc ) { (IN.insn0 == insn_set_32=[16..31]) && (IN.insn1 == insn_set_32=[0..15]) }
+	SYNTAX { insn_set_32 }
+	ACTIVATION { insn_set_32 }
+      }
+      CASE ID_insn_set_16:
+      {
+	CODING AT ( IN.pc ) { IN.insn0 == insn_set_16 }
+	SYNTAX { insn_set_16 }
+	ACTIVATION { insn_set_16 }
+      }
+    }
+
+}
+
+OPERATION root16 IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP insn_set = ROOT16;
+    }
+  CODING { insn_set }
+  SYNTAX { insn_set }
+  ACTIVATION { insn_set }
+}
+
+OPERATION root32 IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP insn_set = ROOT32;
+    }
+  CODING { 0b11 insn_set }
+  SYNTAX { insn_set }
+  ACTIVATION { insn_set }
+}
+
+
+/* operation used for debugger only (position of PROGRAM_COUNTER cursor in disassembly view):
+   define that the debugger program counter highlights the instruction that is currently in the WB stage */
+OPERATION update_pc IN pipe.MEM
+{
+  BEHAVIOR {
+    PC = IN.pc;
+  }
+}
+
+

@@ -1,0 +1,594 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   Load/Store:
+   This file defines all data memory load and store
+   instructions. 
+*/
+
+
+#include "inc/defines.h"
+#include "inc/memory_cfg.h"
+
+RESOURCE
+{
+  uint32 mem_ldst_address;
+}
+
+/**
+   LOAD DECODE STAGE
+*/
+
+
+INSTRUCTION ld IN pipe.DC
+{
+  DECLARE
+    {   
+      GROUP src= { reg };     /* address */
+      GROUP dst= { reg };      /* destination register */
+      GROUP opcode={ lw || lh || lhu || lb || lbu }; /* load type */
+      INSTANCE bypass_src1_dc, ld_ex, ld_mem, writeback_dst0;
+   }
+  CODING { 0b0001 opcode src dst }
+  SYNTAX { opcode ~" " dst "," src }
+
+  BEHAVIOR
+    {
+      /* put offset into the pipeline*/
+      OUT.offset = 0;
+      OUT.ldst_type = opcode;
+
+      COMPILER_WRITE(R[dst])
+      OUT.bp_idx_dst0 = dst;
+
+      COMPILER_READ(R[src]);
+      signal_bp_idx_src1_dc=src;
+    }
+
+  DOCUMENTATION("LOAD from Data Memory with zero offset") {R[dst] = MEM[r[src]]}
+
+  ACTIVATION {bypass_src1_dc, ld_ex, ld_mem, writeback_dst0}
+
+  SWITCH (opcode)
+  {
+    CASE lb:
+      LLVM MATCH LOADS8R
+      {
+        LET { hasDelaySlot = 1 }
+        CODE { set $dst, (sextloadi8 $src) }
+      }
+    CASE lbu:
+      LLVM MATCH LOADZ8R
+      {
+        LET { hasDelaySlot = 1 }
+        CODE { set $dst, (zextloadi8 $src) }
+      }
+    CASE lh:
+      LLVM MATCH LOADS16R
+      {
+        LET { hasDelaySlot = 1 }
+        CODE { set $dst, (sextloadi16 $src) }
+      }
+    CASE lhu:
+      LLVM MATCH LOADZ16R
+      {
+        LET { hasDelaySlot = 1 }
+        CODE { set $dst, (zextloadi16 $src) }
+      }
+    CASE lw:
+      LLVM MATCH LWR
+      {
+        LET { hasDelaySlot = 1 }
+        CODE { set $dst, (load $src) }
+      }
+  }
+}
+
+INSTRUCTION ldl IN pipe.DC
+{
+  DECLARE
+    {   
+      GROUP src= { reg };     /* address */
+      GROUP dst= { reg };      /* destination register */
+      GROUP opcode={ lwl || lhl|| lhul || lbl || lbul }; /* load type */
+      GROUP offs = { simm16 };                  /* signed 16-bit offset */
+      INSTANCE bypass_src1_dc, ld_ex, ld_mem, writeback_dst0;
+   }
+  CODING { 0b110 opcode src dst offs }
+  SYNTAX { opcode ~" " dst "," src "," offs }
+
+  BEHAVIOR
+    {
+      /* put offset into the pipeline*/
+      OUT.offset = offs; /* signed offset */
+      OUT.ldst_type = opcode;
+
+      COMPILER_WRITE(R[dst])
+      OUT.bp_idx_dst0=dst;
+
+      COMPILER_READ(R[src]);
+      signal_bp_idx_src1_dc=src;
+    }
+
+  DOCUMENTATION("LOAD from Data Memory with 16-bit signed offset") {R[dst] = MEM[r[src]+offs]}
+
+  ACTIVATION {bypass_src1_dc, ld_ex, ld_mem, writeback_dst0}
+
+  SWITCH (opcode)
+  {
+    CASE lbl:
+    LLVM MATCH LOADS8A
+    {
+      LET { hasDelaySlot = 1 }
+      SYNTAX { ldl(addr:{src, offs}) }
+      CODE { set $dst, (sextloadi8 $addr) }
+    }
+    CASE lbul:
+    LLVM MATCH LOADZ8A
+    {
+      LET { hasDelaySlot = 1 }
+      SYNTAX { ldl(addr:{src, offs}) }
+      CODE { set $dst, (zextloadi8 $addr) }
+    }
+    CASE lhl:
+    LLVM MATCH LOADS16A
+    {
+      LET { hasDelaySlot = 1 }
+      SYNTAX { ldl(addr:{src, offs}) }
+      CODE { set $dst, (sextloadi16 $addr) }
+    }
+    CASE lhul:
+    LLVM MATCH LOADZ16A
+    {
+      LET { hasDelaySlot = 1 }
+      SYNTAX { ldl(addr:{src, offs}) }
+      CODE { set $dst, (zextloadi16 $addr) }
+    }
+    CASE lwl:
+    LLVM MATCH LW
+    {
+      LET { hasDelaySlot = 1 }
+      SYNTAX { ldl(addr:{src, offs}) }
+      CODE { set $dst, (load $addr) }
+    }
+  }
+}
+
+
+INSTRUCTION st IN pipe.DC
+{
+  DECLARE
+    {   
+    
+      GROUP src= { reg };             /* address */
+      GROUP dst= { reg };             /* source register */
+      GROUP opcode={ sw || sh || sb }; /* load type */
+      INSTANCE bypass_src1_dc,bypass_src0_dc,st_ex;
+    }
+  CODING { 0b0001 opcode src dst }
+  SYNTAX { opcode ~" " dst "," src }
+
+  BEHAVIOR
+    {
+      /* put offset into the pipeline*/
+      OUT.offset = 0;
+      OUT.ldst_type = opcode;
+
+      COMPILER_READ(R[src]);
+      signal_bp_idx_src1_dc=src;
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  DOCUMENTATION("STORE to Data Memory with zero offset") {MEM[r[src]]=R[dst]}
+
+  ACTIVATION {bypass_src1_dc, bypass_src0_dc, st_ex}
+
+  SWITCH (opcode)
+  {
+    CASE sb:
+      LLVM MATCH STORE8R
+      {
+        CODE { truncstorei8 $src, $dst }
+      }
+    CASE sh:
+      LLVM MATCH STORE16R
+      {
+        CODE { truncstorei16 $src, $dst }
+      }
+    CASE sw:
+      LLVM MATCH SWR
+      {
+        CODE { store $src, $dst }
+      }
+  }
+}
+
+INSTRUCTION stl IN pipe.DC
+{
+  DECLARE
+    {   
+    
+      GROUP src= { reg };             /* address */
+      GROUP dst= { reg };             /* source register */
+      GROUP opcode={ swl || shl || sbl }; /* store type */
+      GROUP offs = { simm16 };                  /* signed 16-bit offset */
+      INSTANCE bypass_src1_dc,bypass_src0_dc,st_ex;
+    }
+  CODING { 0b110 opcode src dst offs  }
+  SYNTAX { opcode ~" " dst "," src "," offs }
+
+  BEHAVIOR
+    {
+      /* put offset into the pipeline*/
+      OUT.offset = offs;  /* signed offset */
+      OUT.ldst_type = opcode;
+
+      COMPILER_READ(R[src]);
+      signal_bp_idx_src1_dc=src;
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  DOCUMENTATION("STORE to Data Memory with 16-bit signed offset") {MEM[r[src]+offs]=R[dst]}
+
+  ACTIVATION {bypass_src1_dc, bypass_src0_dc, st_ex}
+
+  SWITCH (opcode)
+  {
+    CASE sbl:
+    LLVM MATCH STORE8A
+    {
+      SYNTAX { stl(addr:{src, offs}) }
+      CODE { truncstorei8 $dst, $addr }
+    }
+    CASE shl:
+    LLVM MATCH STORE16A
+    {
+      SYNTAX { stl(addr:{src, offs}) }
+      CODE { truncstorei16 $dst, $addr }
+    }
+    CASE swl:
+    LLVM MATCH SW
+    {
+      SYNTAX { stl(addr:{src, offs}) }
+      CODE { store $dst, $addr }
+    }
+  }
+}
+
+
+/**
+   LOAD EXECUTE STAGE
+*/
+
+OPERATION ld_ex IN pipe.EX
+{
+    DECLARE
+    {
+        INSTANCE bypass_src1_ex, address_generation, ld_mem_req;
+    }
+
+    ACTIVATION {bypass_src1_ex, address_generation, ld_mem_req}
+}
+
+OPERATION address_generation IN pipe.EX
+{
+  BEHAVIOR
+    {
+      mem_ldst_address = signal_bp_val_src1_ex + (int32) IN.offset;
+    }
+}
+
+/**
+   STORE MEMORY STAGE
+*/
+
+OPERATION st_ex IN pipe.EX
+{
+    DECLARE
+    {
+        INSTANCE bypass_src1_ex, bypass_src0_ex, address_generation,st_mem;
+    }
+    ACTIVATION {bypass_src1_ex, bypass_src0_ex, address_generation,st_mem}
+}
+
+
+OPERATION st_mem IN pipe.EX
+{
+    DECLARE
+    {
+        INSTANCE parity;
+    }
+    	
+  BEHAVIOR
+    {
+      uint32 req_wr_address; /* Address for request write (all made local to st_mem)*/
+      uint32 req_wr_data;    /* Data for request write */
+      uint32 wr_mask;		 /* Mask for write data */
+      
+      req_wr_data = signal_bp_val_src0_ex;
+      
+      req_wr_address = mem_ldst_address;
+      
+      wr_mask = 0xffffffff;		/* default is word write */
+      
+      switch (IN.ldst_type.to_uint32(0,2))
+	{
+	case LDST_SW:
+	  break;
+	case LDST_SH:
+	  switch(req_wr_address & 0x02)
+	    {
+	    case 0x00:                    wr_mask=0x0000ffff;break;
+	    case 0x02: req_wr_data<<= 16; wr_mask=0xffff0000;break;
+	    }
+	  break;
+	  
+	case LDST_SB:
+	  switch(req_wr_address & 0x03)
+	    {
+	    case 0x00:                    wr_mask=0x000000ff;break;
+	    case 0x01: req_wr_data<<= 8 ; wr_mask=0x0000ff00;break;
+	    case 0x02: req_wr_data<<= 16; wr_mask=0x00ff0000;break;
+	    case 0x03: req_wr_data<<= 24; wr_mask=0xff000000;break;
+	    }
+	  break;
+	}
+      
+      req_wr_data&=wr_mask;
+      data_mem.setAddress_c0(mem_ldst_address>>2);  
+      data_mem.setData_c0(req_wr_data,wr_mask);
+      
+//      cout << "store addr: " << (mem_ldst_address>>2) <<endl;
+      
+         if(EN_PAT)  // decision logic wrong here!!! 
+        {
+        	if (((mem_ldst_address) > DATA_Begin ) && ((mem_ldst_address) < DATA_End))
+            {
+            	PAT_Data = req_wr_data;
+            	reg_parity_sta = true;
+            }
+            else reg_parity_sta = false;
+        }
+    }
+    
+    ACTIVATION {
+        if(EN_PAT) 
+        { 
+          parity
+        }    	
+    }
+}
+
+
+OPERATION ld_mem_req IN pipe.EX
+{
+  BEHAVIOR
+    {
+      OUT.address = mem_ldst_address;
+      
+      /* Request read on synchronous memory*/
+      data_mem.setAddress_c0(mem_ldst_address>>2);  
+    }
+}
+
+/**
+   LOAD MEMORY STAGE
+*/
+
+
+OPERATION ld_mem IN pipe.MEM
+{
+
+  DECLARE
+  {
+      REFERENCE dst;
+  }
+  
+  BEHAVIOR
+    {
+      uint32 try_rd_address; /* Address for try read (made local to ld_mem)*/
+      uint32 try_rd_data;    /* Read data (made local to both ld_mem and st_mem)*/
+      unsigned bit[32] mem_rd_data;
+ 
+      /* try to read data */
+      try_rd_address=IN.address;
+      data_mem.getData_c0(mem_rd_data);
+      try_rd_data = mem_rd_data.to_uint32(0,32);
+
+      switch (IN.ldst_type.to_uint32(0,3))
+	{
+	case LDST_LW:
+	  break;
+	case LDST_LH:
+	  switch(try_rd_address & 0x2)
+            {
+	    case 0x0: try_rd_data = (try_rd_data     ) & 0xffff; break;
+	    case 0x2: try_rd_data = (try_rd_data>> 16) & 0xffff; break;
+	    }
+	  try_rd_data = SIGN_EXTEND_16(try_rd_data);
+	  break;
+	  
+	case LDST_LHU:
+	  switch(try_rd_address & 0x2)
+            {
+	    case 0x0: try_rd_data = (try_rd_data     ) & 0xffff; break;
+	    case 0x2: try_rd_data = (try_rd_data>> 16) & 0xffff; break;
+	    }
+	  try_rd_data = ZERO_EXTEND_16(try_rd_data);
+	  break;
+	  
+	case LDST_LB:
+	  switch(try_rd_address & 0x3)
+            {
+	    case 0x0: try_rd_data = (try_rd_data     ) & 0xff; break;
+	    case 0x1: try_rd_data = (try_rd_data>>  8) & 0xff; break;
+	    case 0x2: try_rd_data = (try_rd_data>> 16) & 0xff; break;
+	    case 0x3: try_rd_data = (try_rd_data>> 24) & 0xff; break;
+	    }
+	  try_rd_data = SIGN_EXTEND_8(try_rd_data);
+	  break;
+	  
+	case LDST_LBU:
+	  switch(try_rd_address & 0x3)
+            {
+	    case 0x0: try_rd_data = (try_rd_data     ) & 0xff; break;
+	    case 0x1: try_rd_data = (try_rd_data>>  8) & 0xff; break;
+	    case 0x2: try_rd_data = (try_rd_data>> 16) & 0xff; break;
+	    case 0x3: try_rd_data = (try_rd_data>> 24) & 0xff; break;
+	    }
+	  try_rd_data = ZERO_EXTEND_8(try_rd_data);
+	  break;
+	}
+      
+      OUT.data_dst0 = try_rd_data;
+      OUT.data_dst0_valid = true;
+    }
+}
+
+OPERATION lw  
+{
+  CODING { 0b1000 }
+  SYNTAX { "lw"    }
+  DOCUMENTATION {Load 32-bit word }
+  EXPRESSION { LDST_LW }
+}
+
+OPERATION lh    
+{
+  CODING { 0b1001 }
+  SYNTAX { "lh"    }
+  DOCUMENTATION {Load 16-bit half-word with sign extension }
+  EXPRESSION { LDST_LH }
+}
+
+OPERATION lhu   
+{
+  CODING { 0b1010 }
+  SYNTAX { "lhu" }
+  DOCUMENTATION {Load 16-bit half-word (upper bits are zeroed) }
+  EXPRESSION { LDST_LHU }
+}
+
+OPERATION lb    
+{
+  CODING { 0b1011 }
+  SYNTAX { "lb"    }
+  DOCUMENTATION {Load 8-bit byte with sign extension }
+  EXPRESSION { LDST_LB }
+}
+
+OPERATION lbu   
+{
+  CODING { 0b1110 }
+  SYNTAX { "lbu" }
+  DOCUMENTATION {Load 8-bit byte (upper bits are zeroed) }
+  EXPRESSION { LDST_LBU }
+}
+
+OPERATION sw
+{
+  CODING { 0b1100 }
+  SYNTAX { "sw"    }
+  DOCUMENTATION {Store 32-bit word }
+  EXPRESSION { LDST_SW }
+}
+
+
+OPERATION sh
+{
+  CODING { 0b1101 }
+  SYNTAX { "sh"    }
+  DOCUMENTATION {Store 16-bit half-word }
+  EXPRESSION { LDST_SH }
+}
+
+OPERATION sb
+{
+  CODING { 0b1111 }
+  SYNTAX { "sb"    }
+  DOCUMENTATION {Store 8-bit byte }
+  EXPRESSION { LDST_SB }
+}
+
+OPERATION lwl  
+{
+  CODING { 0b000 }
+  SYNTAX { "lw"    }
+  DOCUMENTATION {Load 32-bit word }
+  EXPRESSION { LDST_LW }
+}
+
+OPERATION lhl    
+{
+  CODING { 0b001}
+  SYNTAX { "lh"    }
+  DOCUMENTATION {Load 16-bit half-word with sign extension }
+  EXPRESSION { LDST_LH }
+}
+
+OPERATION lhul   
+{
+  CODING { 0b010 }
+  SYNTAX { "lhu" }
+  DOCUMENTATION {Load 16-bit half-word (upper bits are zeroed) }
+  EXPRESSION { LDST_LHU }
+}
+
+OPERATION lbl    
+{
+  CODING { 0b011}
+  SYNTAX { "lb"    }
+  DOCUMENTATION {Load 8-bit byte with sign extension }
+  EXPRESSION { LDST_LB }
+}
+
+OPERATION lbul   
+{
+  CODING { 0b110 }
+  SYNTAX { "lbu" }
+  DOCUMENTATION {Load 8-bit byte (upper bits are zeroed) }
+  EXPRESSION { LDST_LBU }
+}
+
+OPERATION swl
+{
+  CODING { 0b100 }
+  SYNTAX { "sw"    }
+  DOCUMENTATION {Store 32-bit word }
+  EXPRESSION { LDST_SW }
+}
+
+OPERATION shl
+{
+  CODING { 0b101 }
+  SYNTAX { "sh"    }
+  DOCUMENTATION {Store 16-bit half-word }
+  EXPRESSION { LDST_SH }
+}
+
+OPERATION sbl
+{
+  CODING { 0b111 }
+  SYNTAX { "sb"    }
+  DOCUMENTATION {Store 8-bit byte }
+  EXPRESSION { LDST_SB }
+}
+
+
+
+

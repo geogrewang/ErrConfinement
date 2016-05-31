@@ -1,0 +1,211 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   Bypass:
+   This file defines all bypass channels from
+   the MEM,WB stage to DC,EX.
+*/
+
+#include "inc/defines.h"
+
+OPERATION bypass_src1_dc  IN pipe.DC
+{
+  /** load source operand 1 
+      from register file or writeback stage or mem stage
+      if a bypass exists */
+  /** This bypass operation is split in two parts:
+      - the actual computation of the bypass into a signal "signal_bp_val_src1_dc" (bypass_src1_dc_int)
+      - the assignment of the signal into the pipeline register DC.OUT.operand_src1 (bypass_src1_dc_copy)
+      The reason for this split is:
+      - ALU instructions will require both functions (they read from the pipeline register)
+      - BRANCH-AND-LINK instructions will require the inner part only (they read from the signal).
+        The writing to the pipeline register must be avoided in that case.
+  */
+  DECLARE {
+    INSTANCE bypass_src1_dc_int, bypass_src1_dc_copy;
+  }
+  ACTIVATION { bypass_src1_dc_int, bypass_src1_dc_copy }
+}
+
+OPERATION bypass_src1_dc_int IN pipe.DC
+{
+  /** load source operand 1 
+      from register file or writeback stage or mem stage
+      if a bypass exists */
+
+  BEHAVIOR {
+    uint32 tmp_bypass_val;
+
+    /* operand register index is carried in signal_bp_idx_src1_dc */
+
+    /* check if a writeback to this register is pending at stage MEM */
+    if (MEM.IN.data_dst0_valid && (MEM.IN.bp_idx_dst0 == signal_bp_idx_src1_dc)) {
+      /* bypass the result from the input pipeline register of stage MEM */
+      tmp_bypass_val = MEM.IN.data_dst0;
+    }
+    /* check if a writeback to this register is pending at stage WB */
+    else if (WB.IN.data_dst0_valid && (WB.IN.bp_idx_dst0 == signal_bp_idx_src1_dc)) {
+      /* bypass the result from the input pipeline register of stage WB */
+      tmp_bypass_val = WB.IN.data_dst0;
+    }
+    /* default (no bypass): pick result from register file R[signal_bp_idx_src1_dc] */
+    else {
+      uint32 tmp_idx = signal_bp_idx_src1_dc.to_uint32(0,4); // convert to native integer for [...] access
+      tmp_bypass_val = COMPILER_DO_HIDDEN_ACCESS(R, tmp_idx); 
+    }
+
+    /* write back result to signal only */
+    signal_bp_val_src1_dc = tmp_bypass_val; 
+
+
+    /* forward current operand register index to the EX stage,
+       to be picked up by operation bypass_src1_ex */
+    OUT.bp_idx_src1 = signal_bp_idx_src1_dc;
+  }
+}
+
+OPERATION bypass_src1_dc_copy IN pipe.DC
+{
+  BEHAVIOR {
+    /* copy result of bypass_src1_dc_int to operand pipeline register */
+    OUT.operand_src1 = signal_bp_val_src1_dc;
+  }
+}
+
+OPERATION bypass_src0_dc IN pipe.DC
+{
+  /** load source operand 2 
+      from register file or writeback stage or mem stage
+      if a bypass exists */
+  BEHAVIOR {
+    uint32 tmp_bypass_val;
+
+    /* operand register index is carried in signal_bp_idx_src0_dc */
+
+    /* check if a writeback to this register is pending at stage MEM */
+    if (MEM.IN.data_dst0_valid && (MEM.IN.bp_idx_dst0 == signal_bp_idx_src0_dc)) {
+      /* bypass the result from the input pipeline register of stage MEM */
+      tmp_bypass_val = MEM.IN.data_dst0;
+    }
+    /* check if a writeback to this register is pending at stage WB */
+    else if (WB.IN.data_dst0_valid && (WB.IN.bp_idx_dst0 == signal_bp_idx_src0_dc)) {
+      /* bypass the result from the input pipeline register of stage WB */
+      tmp_bypass_val = WB.IN.data_dst0;
+    }
+    /* default (no bypass): pick result from register file R[signal_bp_idx_src0_dc] */
+    else {
+      uint32 tmp_idx = signal_bp_idx_src0_dc.to_uint32(0,4); // convert to native integer for [...] access
+      tmp_bypass_val = COMPILER_DO_HIDDEN_ACCESS(R, tmp_idx);
+    }
+
+    /* write back result to operand pipeline register */
+    OUT.operand_src0 = tmp_bypass_val; 
+        
+    /* forward current operand register index to the EX stage,
+       to be picked up by operation bypass_src0_ex */
+    OUT.bp_idx_src0 = signal_bp_idx_src0_dc;
+
+  }
+}
+
+OPERATION bypass_src1_ex IN pipe.EX
+{
+  /** load alu operand 1 
+      from pipeline or writeback stage or mem stage
+      if a bypass exists */
+
+  BEHAVIOR {
+    uint32 tmp_bypass_val;
+
+    /* operand register index is carried in pipeline register IN.bp_idx_src1 */
+
+    /* check if a writeback to this register is pending at stage MEM */
+    if (MEM.IN.data_dst0_valid && (MEM.IN.bp_idx_dst0 == IN.bp_idx_src1)) {
+      /* bypass the result from the input pipeline register of stage MEM */
+      tmp_bypass_val = MEM.IN.data_dst0;
+    }
+    /* check if a writeback to this register is pending at stage WB */
+    else if (WB.IN.data_dst0_valid && (WB.IN.bp_idx_dst0 == IN.bp_idx_src1)) {
+      /* bypass the result from the input pipeline register of stage WB */
+      tmp_bypass_val = WB.IN.data_dst0;
+    }
+    /* default (no bypass): pick result from pipeline register IN.operand_src1
+       (which was written in previous stage by bypass operation bypass_src1_dc) */
+    else {
+      tmp_bypass_val = IN.operand_src1;
+    }
+
+    /* write back result to signal */
+    signal_bp_val_src1_ex = tmp_bypass_val; 
+  }
+}
+
+
+OPERATION bypass_src0_ex IN pipe.EX
+{
+  /** load alu operand 2
+      from pipeline or writeback stage or mem stage
+      if a bypass exists */
+
+  BEHAVIOR {
+    uint32 tmp_bypass_val;
+
+    /* operand register index is carried in pipeline register IN.bp_idx_src0 */
+    
+    /* check if a writeback to this register is pending at stage MEM */
+    if (MEM.IN.data_dst0_valid && (MEM.IN.bp_idx_dst0 == IN.bp_idx_src0)) {
+      /* bypass the result from the input pipeline register of stage MEM */
+      tmp_bypass_val = MEM.IN.data_dst0;
+    }
+    /* check if a writeback to this register is pending at stage WB */
+    else if (WB.IN.data_dst0_valid && (WB.IN.bp_idx_dst0 == IN.bp_idx_src0)) {
+      /* bypass the result from the input pipeline register of stage WB */
+      tmp_bypass_val = WB.IN.data_dst0;
+    }
+    /* default (no bypass): pick result from pipeline register IN.operand_src0
+       (which was written in previous stage by bypass operation bypass_src0_dc) */
+    else {
+      tmp_bypass_val = IN.operand_src0; 
+    }
+
+    /* write back result to signal */
+    signal_bp_val_src0_ex = tmp_bypass_val;
+  }
+}
+
+
+
+/*
+  OPERATIONS WITH DISABLED BYPASS
+*/
+
+OPERATION nobypass_src1_ex IN pipe.EX
+{
+  /** load alu operand 1 directly
+      from EX.IN pipeline reg */
+
+  BEHAVIOR {
+    signal_bp_val_src1_ex = IN.operand_src1;
+  }
+}
+
+OPERATION nobypass_src0_ex IN pipe.EX
+{
+  /** load alu operand 2 directly
+      from EX.IN pipeline reg */
+
+  BEHAVIOR {
+    signal_bp_val_src0_ex = IN.operand_src0;
+  }
+}

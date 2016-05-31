@@ -1,0 +1,812 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+/**
+   ALU:
+   This file defines the architecture and the resp.
+   instruction-set of the core's arithmetic-logic-unit.
+*/
+
+
+#include "inc/defines.h"
+#include "inc/alu_defines.h"
+
+RESOURCE
+{
+  uint32 alu_out;
+
+  bool is_alu_insn;
+  bool cmov_active;
+
+}
+
+INSTRUCTION alu   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { add 
+                    || sub 
+                    || rsub 
+                    || and 
+                    || or 
+                    || xor
+                    || sll
+                    || srl
+                    || sra
+                    || mov
+                    || neg
+                    || inv
+                    || sxt8
+                    || sxt16
+                    || zxt16
+      };
+      GROUP src = { reg };
+      GROUP dst  = { reg };
+      INSTANCE bypass_src1_dc, bypass_src0_dc, bypass_src1_ex, bypass_src0_ex, alu_ex, writeback_dst0;
+    }
+  CODING { 0b0000 opcode src dst }
+  SYNTAX { opcode ~" " dst "," src  }
+
+  DOCUMENTATION("ALU (register-register) Instructions"){ Arithmetic and logical operations.  For binary operations (eg. add, sub..) 
+                                                         the destination register is one of the sources.}
+
+
+  BEHAVIOR
+    {
+        OUT.alu_op = opcode;
+
+	COMPILER_WRITE(R[dst]);
+        OUT.bp_idx_dst0=dst;
+
+	COMPILER_READ(R[src]);
+	signal_bp_idx_src1_dc=src;
+
+	COMPILER_READ(R[dst]);
+	signal_bp_idx_src0_dc=dst;
+    }
+  ACTIVATION {
+    if (!((opcode==ALU_OP_MOV) && (src==0) && (dst==0)))  // mov r0,r0 == nop, don't trigger ALU/Bypass/Writeback
+      { bypass_src1_dc, bypass_src0_dc, bypass_src1_ex, bypass_src0_ex, alu_ex, writeback_dst0 }
+  }
+  
+  SWITCH (opcode)
+  {
+      CASE add: LLVM MATCH ADD
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (add IntRegs:$src0, $src) }
+      }
+      CASE sub: LLVM MATCH SUB
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (sub IntRegs:$src0, $src) }
+      }
+      CASE and: LLVM MATCH AND
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (and IntRegs:$src0, $src) }
+      }
+      CASE or: LLVM MATCH OR
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (or IntRegs:$src0, $src) }
+      }
+      CASE xor: LLVM MATCH XOR
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (xor IntRegs:$src0, $src) }
+      }
+      CASE sll: LLVM MATCH SHL
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (shl IntRegs:$src0, $src) }
+      }
+      CASE srl: LLVM MATCH SRL
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (srl IntRegs:$src0, $src) }
+      }
+      CASE sra: LLVM MATCH SRA
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (sra IntRegs:$src0, $src) }
+      }
+      CASE neg: LLVM MATCH NEG
+      {
+        CODE { set $dst, (ineg $src) }
+      }
+      CASE inv: LLVM MATCH NOT
+      {
+        CODE { set $dst, (not $src) }
+      }
+      CASE sxt8: LLVM MATCH SXT8
+      {
+        CODE { set $dst, (sext_inreg $src, i8) }
+      }
+      CASE sxt16: LLVM MATCH SXT16
+      {
+        CODE { set $dst, (sext_inreg $src, i16) }
+      }
+      CASE zxt16: LLVM MATCH ZXT16
+      {
+        CODE { set $dst, (and IntRegs:$src, 0xffff) }
+      }
+      CASE rsub: LLVM MATCH RSUB
+      {
+        LET { Constraints = "$src0 = $dst" }
+        CODE { set $dst, (sub IntRegs:$src, IntRegs:$src0) }
+      }
+  }
+}
+
+/* special case: multiplier (same coding group as ALU) */
+INSTRUCTION mul   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { mult };
+      GROUP src = { reg };
+      GROUP dst  = { reg };
+      INSTANCE bypass_src1_dc, bypass_src0_dc, bypass_src1_ex, bypass_src0_ex, mul_ex, writeback_dst0;
+    }
+  CODING { 0b0000 opcode src dst }
+  SYNTAX { opcode ~" " dst "," src  }
+
+  DOCUMENTATION("MUL (register-register) Instruction"){ Multiply instruction. The destination register is one of the sources.}
+
+  BEHAVIOR
+    {
+	COMPILER_WRITE(R[dst]);
+        OUT.bp_idx_dst0=dst;
+
+	COMPILER_READ(R[src]);
+	signal_bp_idx_src1_dc=src;
+
+	COMPILER_READ(R[dst]);
+	signal_bp_idx_src0_dc=dst;
+    }
+
+  ACTIVATION { bypass_src1_dc, bypass_src0_dc, bypass_src1_ex, bypass_src0_ex, mul_ex, writeback_dst0 }
+
+  LLVM MATCH MUL
+  {
+    LET { Constraints = "$src0 = $dst" }
+    CODE { set $dst, (mul IntRegs:$src0, $src) }
+  }
+}
+
+INSTRUCTION alui   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { aluis || aluiu };
+      GROUP dst  = { reg};
+      INSTANCE bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, alu_ex, writeback_dst0 ;
+    }
+  CODING { 0b01 opcode dst }
+  SYNTAX { opcode }
+
+  BEHAVIOR
+    {
+      COMPILER_WRITE(R[dst]);
+      OUT.bp_idx_dst0=dst;
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  ACTIVATION { opcode, bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, alu_ex, writeback_dst0 }
+
+  LLVM MATCH ADDI8
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { alui(opcode=aluis(opcode=addi)) }
+    CODE { set $dst, (add IntRegs:$src0, $imm) }
+  }
+
+  LLVM MATCH LDI8
+  {
+    LET { neverHasSideEffects=1, isAsCheapAsAMove=1, isReMaterializable=1 }
+    SYNTAX { alui(opcode=aluis(opcode=ldi)) }
+    CODE { set $dst, $imm }
+  }
+
+  LLVM MATCH ANDI8
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { alui(opcode=aluiu(opcode=andi)) }
+    CODE { set $dst, (and IntRegs:$src0, $imm) }
+  }
+      
+  LLVM MATCH ORI8
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { alui(opcode=aluiu(opcode=ori)) }
+    CODE { set $dst, (or IntRegs:$src0, $imm) }
+  }
+}
+
+OPERATION aluis IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { addi 
+                    || ldi 
+      };
+      REFERENCE dst;
+      GROUP imm = { simm8 };
+    }
+  CODING { opcode imm }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("ALU (register with 8-bit signed immediate) Instructions"){}
+
+  BEHAVIOR
+    {
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = SIGN_EXTEND_8(imm);
+    }
+}
+
+OPERATION aluiu IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { andi
+                    || ori  
+      };
+      REFERENCE dst;
+      GROUP imm = { uimm8 };
+    }
+  CODING { opcode imm }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("ALU (register with 8-bit unsigned immediate) Instructions"){}
+
+  BEHAVIOR
+    {
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = ZERO_EXTEND_8(imm);
+   }
+}
+
+INSTRUCTION aluil   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { aluils || aluilu || ldil_misc };
+      GROUP dst  = { reg };
+      INSTANCE nobypass_src1_ex, alu_ex, writeback_dst0 ;
+    }
+  CODING { 0b1111 0b000 opcode=[16..18] dst opcode=[0..15] }
+  SYNTAX { opcode }
+
+  BEHAVIOR
+    {
+      COMPILER_WRITE(R[dst]);
+      OUT.bp_idx_dst0=dst;
+    }
+  
+  ACTIVATION { opcode, nobypass_src1_ex, alu_ex, writeback_dst0 }
+
+
+  LLVM MATCH ADDI16
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { aluil(opcode=aluils(opcode=addil)) }
+    CODE { set $dst, (add IntRegs:$src0, $imm) }
+  }
+  LLVM MATCH LDI16
+  {
+    LET { neverHasSideEffects=1, isAsCheapAsAMove=1, isReMaterializable=1 }
+    SYNTAX { aluil(opcode=aluils(opcode=ldil)) }
+    // FIXME:   CODE { set $dst, immZExt16:$imm }
+    CODE { set $dst, $imm }
+  }
+  LLVM MATCH ANDI16
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { aluil(opcode=aluilu(opcode=andil)) }
+    CODE { set $dst, (and IntRegs:$src0, $imm) }
+  }
+  LLVM MATCH ORI16
+  {
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { aluil(opcode=aluilu(opcode=oril)) }
+    CODE { set $dst, (or IntRegs:$src0, $imm) }
+  }
+  LLVM MATCH ORI16_address
+  { 
+    LET { Constraints = "$src0 = $dst" }
+    SYNTAX { "or16 $dst, (($imm) & 0xffff)" }
+    CODE { set IntRegs:$dst, (or IntRegs:$src0, immZExt16:$imm) }
+    OUTS { IntRegs:dst }
+    INS { IntRegs:src0, i32imm:imm }
+  }
+}
+
+OPERATION aluils   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { addil
+                    || ldil 
+      };
+      REFERENCE dst;
+      GROUP imm = { simm16 };
+      INSTANCE bypass_src0_dc, bypass_src0_ex;
+    }
+  CODING { 0b0 opcode imm }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("ALU (register with 16-bit signed immediate) Instructions"){}
+
+  BEHAVIOR
+    {
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = SIGN_EXTEND_16(imm);
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  ACTIVATION { bypass_src0_dc, bypass_src0_ex }
+}
+
+OPERATION aluilu   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { andil
+                    || oril
+      };
+      REFERENCE dst;
+      GROUP imm = { uimm16 };
+      INSTANCE bypass_src0_dc, bypass_src0_ex;
+    }
+  CODING { 0b0 opcode imm }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("ALU (register with 16-bit unsigned immediate) Instructions"){}
+
+  BEHAVIOR
+    {
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = ZERO_EXTEND_16(imm);
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  ACTIVATION { bypass_src0_dc, bypass_src0_ex }
+}
+
+OPERATION ldil_misc IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { ldilh
+      };
+      REFERENCE dst;
+      GROUP imm = { uimm16 };
+      INSTANCE nobypass_src0_ex;
+    }
+  CODING { 0b1 opcode imm }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("ALU (register with 16-bit unsigned immediate) Instructions (2)"){}
+
+  BEHAVIOR
+    {
+      OUT.alu_op = opcode;
+      OUT.operand_src0 = ZERO_EXTEND_16(imm);
+      OUT.operand_src1 = 16;
+   }
+
+  LLVM MATCH LDILH
+  { 
+    LET { neverHasSideEffects=1, isAsCheapAsAMove=1 }
+    SYNTAX { "ldih $dst, (($imm >> 16) & 0xffff)" } // FIXME: syntax
+    CODE { set IntRegs:$dst, imm32Hi:$imm }
+    OUTS { IntRegs:dst }
+    INS { i32imm:imm }
+  }
+
+  ACTIVATION { nobypass_src0_ex }
+}
+
+INSTRUCTION shifti   IN  pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { slli 
+                    || srli
+                    || srai  
+      };
+      GROUP dst = { reg};
+      GROUP imm = { uimm5 };
+      INSTANCE bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, alu_ex, writeback_dst0;
+    }
+  CODING { 0b0001 0b0 opcode imm  dst }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  DOCUMENTATION("SHIFT (register-immediate) Instructions"){ R[dst] = R[dst] shifted by a 5-bit immediate value.<br><br>Example: srl r1,8}
+
+  BEHAVIOR
+    {
+      OUT.operand_src1 = ZERO_EXTEND_5(imm);
+      OUT.alu_op = opcode;
+
+      COMPILER_WRITE(R[dst]);
+      OUT.bp_idx_dst0=dst;
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+    }
+
+  ACTIVATION { bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, alu_ex, writeback_dst0 }
+
+  SWITCH (opcode)
+  {
+    CASE slli: LLVM MATCH SHLI
+    {
+      LET { Constraints = "$src0 = $dst" }
+      CODE { set $dst, (shl IntRegs:$src0, $imm) }
+    }
+    CASE srli: LLVM MATCH SRLI
+    {
+      LET { Constraints = "$src0 = $dst" }
+      CODE { set $dst, (srl IntRegs:$src0, $imm) }
+    }
+    CASE srai: LLVM MATCH SRAI
+    {
+      LET { Constraints = "$src0 = $dst" }
+      CODE { set $dst, (sra IntRegs:$src0, $imm) }
+    }
+  }
+}
+
+INSTRUCTION cmov_movcc IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmov || movcc };
+      GROUP dst    = { reg  };
+    }
+  CODING { 0b1010 0b1 opcode dst }
+  SYNTAX { opcode }
+  BEHAVIOR {
+    COMPILER_READ(CC);
+    OUT.alu_op = ALU_OP_MOV;
+
+    COMPILER_WRITE(R[dst]);
+    OUT.bp_idx_dst0=dst;
+  }
+  ACTIVATION { opcode }
+
+  LLVM
+  {
+    MATCH CMOVCC
+    {
+      LET { Uses=[CC] }
+      SYNTAX { cmov_movcc(opcode=movcc) }
+      INS { }
+      OUTS { dst }
+    }
+    MATCH CMOVT
+    {
+      LET { Uses=[CC], Defs=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_reg(mode=cmov_on_true))) }
+      INS { src }
+      OUTS { dst }
+    }
+    MATCH CMOVF
+    {
+      LET { Uses=[CC], Defs=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_reg(mode=cmov_on_false))) }
+      INS { src }
+      OUTS { dst }
+    }
+    MATCH CMOVF_PSEUDO
+    {
+      LET { Constraints="$src0 = $dst", Uses=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_reg(mode=cmov_on_false))) }
+      INS { IntRegs:src0, src }
+      OUTS { dst }
+    }
+    MATCH CMOVTI
+    {
+      LET { Uses=[CC], Defs=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_imm(mode=cmov_on_true))) }
+      INS { imm }
+      OUTS { dst }
+    }
+    MATCH CMOVFI
+    {
+      LET { Uses=[CC], Defs=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_imm(mode=cmov_on_false))) }
+      INS { imm }
+      OUTS { dst }
+    }
+    MATCH CMOVFI_PSEUDO
+    {
+      LET { Constraints="$src0 = $dst", Uses=[CC] }
+      SYNTAX { cmov_movcc(opcode=cmov(opcode=cmov_imm(mode=cmov_on_false))) }
+      INS { IntRegs:src0, imm }
+      OUTS { dst }
+    }
+  }
+}
+
+OPERATION cmov IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmov_reg || cmov_imm };
+      REFERENCE dst;
+    }
+  CODING { 0b0 opcode }
+  SYNTAX { "cmov" ~opcode }
+  ACTIVATION { opcode }
+}
+
+OPERATION cmov_reg IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP mode    = { cmov_on_true || cmov_on_false };
+      GROUP src     = { reg };
+      REFERENCE dst;
+      INSTANCE bypass_src1_dc, bypass_src1_ex;
+      INSTANCE cmov_ex, alu_ex;
+    }
+  CODING { 0b0 mode src }
+  SYNTAX { mode ~" " dst "," src  }
+
+  BEHAVIOR {
+    COMPILER_READ(R[src]);
+    signal_bp_idx_src1_dc=src;
+  }
+
+  DOCUMENTATION ("Conditional move Register-Register") { if (condition) R[dst] = R[src]. }
+
+  ACTIVATION { bypass_src1_dc, bypass_src1_ex, cmov_ex, alu_ex }
+}
+
+OPERATION cmov_imm IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP mode = { cmov_on_true || cmov_on_false };
+      GROUP imm =  { simm4 };
+      REFERENCE dst;
+      INSTANCE nobypass_src1_ex;
+      INSTANCE cmov_ex, alu_ex;
+    }
+  CODING { 0b1 mode imm }
+  SYNTAX { mode ~" " dst "," imm }
+
+  BEHAVIOR
+  {
+    OUT.operand_src1 = SIGN_EXTEND_4(imm);
+  }
+
+  DOCUMENTATION ("Conditional move Register-Immediate") { if (condition) R[dst] = imm. }
+
+  ACTIVATION { nobypass_src1_ex, cmov_ex, alu_ex }
+}
+
+OPERATION cmov_on_true  { CODING { 0b0 } SYNTAX { "" } EXPRESSION { 0 } DOCUMENTATION { condition = (CC==true). }}
+OPERATION cmov_on_false { CODING { 0b1 } SYNTAX { "n" } EXPRESSION { 1 } DOCUMENTATION { condition = (CC==false). }}
+
+OPERATION cmov_ex IN pipe.EX
+{
+    DECLARE
+    { 
+        WRITES_AFTER alu_ex;     /* make sure that cmov_ex has priority over alu_ex in writing is_alu_insn and OUT.data_dst0_valid */
+        REFERENCE mode;
+	REFERENCE dst;
+	INSTANCE writeback_dst0;
+    }
+
+    /** truth table of move */
+    /*  mode   0    1       */
+    /*  CC   +--------      */
+    /*       |              */
+    /*   0   | 0    1       */
+    /*       |              */
+    /*   1   | 1    0       */
+    /*       |              */
+    /*                     **/
+
+    BEHAVIOR
+    {
+      bool do_move  = ((!mode) && CC) || (mode && (!CC));
+      cmov_active   = do_move;  /* prevent writeback if move is not executed */
+      is_alu_insn   = do_move;  /* prevent future bypass if move is not executed */
+      OUT.data_dst0_valid = do_move;  /* prevent future bypass if move is not executed */
+    }
+
+    ACTIVATION {
+      if (cmov_active) { writeback_dst0 }
+    }
+}
+
+OPERATION movcc IN pipe.DC
+{
+  DECLARE
+    {
+      REFERENCE dst;
+      INSTANCE nobypass_src1_ex;
+      INSTANCE alu_ex;
+      INSTANCE writeback_dst0;
+    }
+  CODING { 0b100 0b0000 }
+  SYNTAX { "mov" ~" " dst "," "CC" }
+
+  BEHAVIOR
+  {
+    bool movcc_src = false;
+    if (is_cmp_insn) {
+      movcc_src = compare_result; /* previous instruction was a compare, take bypass */
+    } else {
+      movcc_src = CC;
+    }
+    OUT.operand_src1 = movcc_src ? 1 : 0;
+  }
+
+  DOCUMENTATION ("Move CC to Register") { R[dst] = CC. }
+
+  ACTIVATION { nobypass_src1_ex, alu_ex, writeback_dst0 }
+}
+
+/* Same as instruction "mov r0,r0" which is effectively nop
+   ALIAS is ignored by RTL generation */
+ALIAS INSTRUCTION nop IN  pipe.DC
+{
+  DECLARE { INSTANCE nop_ex; }
+  CODING { 0b0[16] }
+  SYNTAX { "nop" }
+
+  DOCUMENTATION("NOP"){No operation (consumes 1 cycle))}
+
+  ACTIVATION { nop_ex }
+
+  LLVM MATCH NOP {
+  }
+}
+
+OPERATION nop_ex IN pipe.EX
+{
+  BEHAVIOR
+    {
+    }
+}
+
+
+  OPERATION mov     { CODING { 0b0000 } SYNTAX { "mov" }    EXPRESSION { ALU_OP_MOV  } DOCUMENTATION {R[dst]=R[src]}}
+  OPERATION add     { CODING { 0b0001 } SYNTAX { "add" }    EXPRESSION { ALU_OP_ADD  } DOCUMENTATION {R[dst]=R[dst]+R[src]}}
+  OPERATION sub     { CODING { 0b0010 } SYNTAX { "sub" }    EXPRESSION { ALU_OP_SUB  } DOCUMENTATION {R[dst]=R[dst]-R[src]}}
+  OPERATION rsub    { CODING { 0b0011 } SYNTAX { "rsub" }   EXPRESSION { ALU_OP_RSUB } DOCUMENTATION {R[dst]=R[src]-R[dst]}}
+  OPERATION and     { CODING { 0b0100 } SYNTAX { "and" }    EXPRESSION { ALU_OP_AND  } DOCUMENTATION {R[dst]=R[dst]&amp;R[src]}}
+  OPERATION or      { CODING { 0b0101 } SYNTAX { "or" }     EXPRESSION { ALU_OP_OR   } DOCUMENTATION {R[dst]=R[dst]|R[src]}}
+  OPERATION xor     { CODING { 0b0110 } SYNTAX { "xor" }    EXPRESSION { ALU_OP_XOR  } DOCUMENTATION {R[dst]=R[dst]^R[src]}}
+  OPERATION inv     { CODING { 0b0111 } SYNTAX { "inv" }    EXPRESSION { ALU_OP_INV  } DOCUMENTATION {R[dst]=~R[src]}}
+  OPERATION sll     { CODING { 0b1000 } SYNTAX { "sll" }    EXPRESSION { ALU_OP_SLL  } DOCUMENTATION {R[dst]=R[dst]&lt;&lt;R[src]}}
+  OPERATION srl     { CODING { 0b1001 } SYNTAX { "srl" }    EXPRESSION { ALU_OP_SRL  } DOCUMENTATION {R[dst]=R[dst]&gt;&gt;R[src]}}
+  OPERATION sra     { CODING { 0b1010 } SYNTAX { "sra" }    EXPRESSION { ALU_OP_SRA  } DOCUMENTATION {R[dst]=R[dst]&gt;&gt;R[src] (signed)}}
+  OPERATION neg     { CODING { 0b1011 } SYNTAX { "neg" }    EXPRESSION { ALU_OP_NEG  } DOCUMENTATION {R[dst]=-R[src]}}
+  OPERATION sxt8    { CODING { 0b1100 } SYNTAX { "sxt8" }   EXPRESSION { ALU_OP_SXT8 } DOCUMENTATION {R[dst]=sign extension from bit 7 of R[src]}}
+  OPERATION sxt16   { CODING { 0b1101 } SYNTAX { "sxt16" }  EXPRESSION { ALU_OP_SXT16} DOCUMENTATION {R[dst]=sign extension from bit 15 of R[src]}}
+  OPERATION zxt16   { CODING { 0b1110 } SYNTAX { "zxt16" }  EXPRESSION { ALU_OP_ZXT16} DOCUMENTATION {R[dst]=R[src] &amp; 0xffff (zero-extension)}}
+  OPERATION mult    { CODING { 0b1111 } SYNTAX { "mul" }    EXPRESSION { ALU_OP_MUL  } DOCUMENTATION {R[dst]=R[dst]*R[src]}}
+
+  OPERATION addi    { CODING { 0b00   } SYNTAX { "add" }    EXPRESSION { ALU_OP_ADD  }
+        DOCUMENTATION {R[dst]=R[dst]+(sign extended 8-bit immediate)}}
+  OPERATION ldi     { CODING { 0b01   } SYNTAX { "ldi" }    EXPRESSION { ALU_OP_MOV  } 
+        DOCUMENTATION {R[dst]=8-bit immediate value (upper bits of R[dst] are sign-extended)}}
+  OPERATION andi     { CODING { 0b10   } SYNTAX { "and" }   EXPRESSION { ALU_OP_AND  }
+        DOCUMENTATION {R[dst]=R[dst]&amp;(8-bit immediate)}}
+  OPERATION ori     { CODING { 0b11   } SYNTAX { "or" }     EXPRESSION { ALU_OP_OR   }
+        DOCUMENTATION {R[dst]=R[dst]|(8-bit immediate)}}
+
+
+  OPERATION addil   { CODING { 0b00   } SYNTAX { "add16" }    EXPRESSION { ALU_OP_ADD  }
+        DOCUMENTATION {R[dst]=R[dst]+(sign extended 16-bit immediate)}}
+  OPERATION ldil    { CODING { 0b01   } SYNTAX { "ldi16" }    EXPRESSION { ALU_OP_MOV  }
+        DOCUMENTATION {R[dst]=16-bit immediate value (upper bits of R[dst] are sign-extended)}}
+  OPERATION andil    { CODING { 0b10   } SYNTAX { "and16" }     EXPRESSION { ALU_OP_AND }
+        DOCUMENTATION {R[dst]=R[dst]&amp;(16-bit immediate)}}
+  OPERATION oril    { CODING { 0b11   } SYNTAX { "or16" }     EXPRESSION { ALU_OP_OR   }
+        DOCUMENTATION {R[dst]=R[dst]|(16-bit immediate)}}
+  OPERATION ldilh   { CODING { 0b00   } SYNTAX { "ldih" }  EXPRESSION { ALU_OP_SLL }
+    DOCUMENTATION {R[dst]=(16-bit immediate)&lt;&lt;16, i.e. load 16-bit immediate to upper 16-bits of R[dst], setting lower 16-bits to zero }
+  }
+
+
+  OPERATION slli    { CODING { 0b00 } SYNTAX { "sll" }    EXPRESSION { ALU_OP_SLL  } DOCUMENTATION {R[dst]=R[dst]&lt;&lt;(5-bit immediate)}}
+  OPERATION srli    { CODING { 0b01 } SYNTAX { "srl" }    EXPRESSION { ALU_OP_SRL  } DOCUMENTATION {R[dst]=R[dst]&gt;&gt;(5-bit immediate)}}
+  OPERATION srai    { CODING { 0b10 } SYNTAX { "sra" }    EXPRESSION { ALU_OP_SRA  } DOCUMENTATION {R[dst]=R[dst]&gt;&gt;(5-bit immediate) (arithmetic)}}
+
+
+OPERATION alu_ex IN pipe.EX
+{
+    BEHAVIOR
+    {
+        uint8 AluOp = IN.alu_op.to_uint32(0,4);
+
+        uint32 alu_core_in1 = signal_bp_val_src1_ex;
+        uint32 alu_core_in2 = signal_bp_val_src0_ex;
+        uint32 alu_core_out;
+
+        switch (AluOp)
+        {
+        case ALU_OP_MOV:
+	     alu_core_out = alu_core_in1; break;
+        case ALU_OP_ADD:
+             alu_core_out = (int32) alu_core_in1 + (int32) alu_core_in2;break;       
+        case ALU_OP_SUB:
+             alu_core_out = (int32) alu_core_in2 - (int32) alu_core_in1;break;       
+        case ALU_OP_RSUB:
+             alu_core_out = (int32) alu_core_in1 - (int32) alu_core_in2;break;       
+        case ALU_OP_NEG:
+             alu_core_out = -(int32) alu_core_in1;break;       
+        case ALU_OP_AND:
+            alu_core_out = alu_core_in2 & alu_core_in1; break;
+        case ALU_OP_OR:
+            alu_core_out = alu_core_in2 | alu_core_in1; break;
+        case ALU_OP_XOR:
+             alu_core_out = alu_core_in2 ^ alu_core_in1; break;
+       case ALU_OP_INV:
+            alu_core_out = alu_core_in1 ^ ((int32) -1); break;
+        case ALU_OP_SLL:
+            alu_core_out = alu_core_in2 << alu_core_in1; break;
+        case ALU_OP_SRL:
+            alu_core_out = alu_core_in2 >> alu_core_in1; break;
+        case ALU_OP_SRA:
+            alu_core_out = (int32) alu_core_in2 >> alu_core_in1; break;
+        case ALU_OP_SXT8:
+            alu_core_out = SIGN_EXTEND_8(alu_core_in1); break;
+        case ALU_OP_SXT16:
+            alu_core_out = SIGN_EXTEND_16(alu_core_in1); break;
+        case ALU_OP_ZXT16:
+            alu_core_out = ZERO_EXTEND_16(alu_core_in1); break;
+        case ALU_OP_MUL:
+	  break; // NOTHING, multiplier is separated out in operation mult_ex
+        default: break;
+        }
+
+	alu_out = alu_core_out;
+
+	OUT.data_dst0=alu_core_out;
+	OUT.data_dst0_valid = true;
+	is_alu_insn = true;
+
+    }
+}
+
+OPERATION mul_ex IN pipe.EX
+{
+    BEHAVIOR
+    {
+        uint32 mul_core_in1 = signal_bp_val_src1_ex;
+        uint32 mul_core_in2 = signal_bp_val_src0_ex;
+        uint32 mul_core_out;
+
+	mul_core_out = (int32) mul_core_in1 * (int32) mul_core_in2;
+
+	OUT.data_dst0=mul_core_out;
+	OUT.data_dst0_valid = true;
+    }
+}
+

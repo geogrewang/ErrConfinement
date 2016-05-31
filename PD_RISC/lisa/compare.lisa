@@ -1,0 +1,486 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+
+#include "inc/defines.h"
+#include "inc/alu_defines.h"
+
+/**
+   Compare:
+   This file defines all the compare instructions that set the condition code
+   (CC) register.
+*/
+
+RESOURCE
+{
+    REGISTER bool CC;
+    bool compare_result;
+    bool is_cmp_insn;
+}
+
+INSTRUCTION cmp IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmp_reg || cmp_simm || cmp_uimm };
+    }
+  CODING { 0b0010 opcode }
+  SYNTAX { opcode }
+  ACTIVATION { opcode }
+}
+
+OPERATION cmp_reg IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmp_eq || cmp_ne  ||
+		       cmp_lt || cmp_le || cmp_ltu || cmp_leu 
+                     };
+      GROUP src,dst = { reg  };
+      INSTANCE bypass_src1_dc, bypass_src0_dc, cmp_ex;
+      INSTANCE bypass_src1_ex, bypass_src0_ex;
+    }
+  CODING { opcode src dst }
+  SYNTAX { opcode ~" " dst "," src  }
+
+  BEHAVIOR
+  {
+      COMPILER_WRITE(CC);
+      OUT.alu_op = opcode;
+
+      COMPILER_READ(R[src]);
+      signal_bp_idx_src1_dc=src;
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+  }
+
+  ACTIVATION { bypass_src1_dc, bypass_src0_dc, bypass_src1_ex, bypass_src0_ex, cmp_ex }
+
+  DOCUMENTATION ("Compare Register-Register") {Compare two registers and set condition code result - used by conditional branch instruction.}
+
+  SWITCH(opcode) {
+    CASE cmp_eq: {
+      LLVM MATCH CMPEQ
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpeq $dst, $src }
+      }
+      LLVM MATCH CMPEQU
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpueq $dst, $src }
+      }
+    }
+    CASE cmp_ne: {
+      LLVM MATCH CMPNE
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpne $dst, $src }
+      }
+      LLVM MATCH CMPNEU
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpune $dst, $src }
+      }
+    }
+    CASE cmp_lt: {
+      LLVM MATCH CMPLT
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmplt $dst, $src }
+      }
+      LLVM MATCH CMPGT
+      {
+        INS { src, dst }
+	LET { Defs=[CC] }
+	CODE { node_cmpgt $src, $dst }
+      }
+    }
+    CASE cmp_le: {
+      LLVM MATCH CMPLE
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmple $dst, $src }
+      }
+      LLVM MATCH CMPGE
+      {
+        INS { src, dst }
+	LET { Defs=[CC] }
+	CODE { node_cmpge $src, $dst }
+      }
+    }
+    CASE cmp_ltu: {
+      LLVM MATCH CMPLTU
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpult $dst, $src }
+      }
+      LLVM MATCH CMPGTU
+      {
+        INS { src, dst }
+	LET { Defs=[CC] }
+	CODE { node_cmpugt $src, $dst }
+      }
+    }
+    CASE cmp_leu: {
+      LLVM MATCH CMPLEU
+      {
+        INS { dst, src }
+	LET { Defs=[CC] }
+	CODE { node_cmpule $dst, $src }
+      }
+      LLVM MATCH CMPGEU
+      {
+        INS { src, dst }
+	LET { Defs=[CC] }
+	CODE { node_cmpuge $src, $dst }
+      }
+    }
+  }
+}
+
+OPERATION cmp_simm IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmpi_eq || cmpi_ne ||
+		       cmpi_lt || cmpi_le ||
+		       cmpi_gt || cmpi_ge
+                     };
+      GROUP dst = { reg  };
+      GROUP imm = { simm4 };
+      INSTANCE bypass_src0_dc, cmp_ex;
+      INSTANCE bypass_src0_ex, nobypass_src1_ex;
+    }
+  CODING { opcode imm dst }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  BEHAVIOR
+  {
+      COMPILER_WRITE(CC);
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = SIGN_EXTEND_4(imm);
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+  }
+
+  ACTIVATION { bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, cmp_ex }
+
+  DOCUMENTATION ("Compare Register-Immediate (Signed)") {Compare registers to immediate (signed) and set condition code result - used by conditional branch instruction.}
+  SWITCH(opcode) {
+    CASE cmpi_eq:
+      LLVM MATCH CMPEQI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpeq $dst, $imm }
+      }
+    CASE cmpi_ne:
+      LLVM MATCH CMPNEI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpne $dst, $imm }
+      }
+    CASE cmpi_lt:
+      LLVM MATCH CMPLTI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmplt $dst, $imm }
+      }
+    CASE cmpi_le:
+      LLVM MATCH CMPLEI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmple $dst, $imm }
+      }
+    CASE cmpi_gt:
+      LLVM MATCH CMPGTI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpgt $dst, $imm }
+      }
+    CASE cmpi_ge:
+      LLVM MATCH CMPGEI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpge $dst, $imm }
+      }
+  }
+}
+
+OPERATION cmp_uimm IN pipe.DC
+{
+  DECLARE
+    {
+      GROUP opcode = { cmpi_ltu || cmpi_leu ||
+		       cmpi_gtu || cmpi_geu
+                     };
+      GROUP dst = { reg  };
+      GROUP imm = { uimm4 };
+      INSTANCE bypass_src0_dc, cmp_ex;
+      INSTANCE bypass_src0_ex, nobypass_src1_ex;
+    }
+  CODING { opcode imm dst }
+  SYNTAX { opcode ~" " dst "," imm }
+
+  BEHAVIOR
+  {
+      COMPILER_WRITE(CC);
+      OUT.alu_op = opcode;
+      OUT.operand_src1 = ZERO_EXTEND_4(imm);
+
+      COMPILER_READ(R[dst]);
+      signal_bp_idx_src0_dc=dst;
+  }
+
+  ACTIVATION { bypass_src0_dc, bypass_src0_ex, nobypass_src1_ex, cmp_ex }
+
+  DOCUMENTATION ("Compare Register-Immediate (Unsigned)") {Compare registers to immediate (unsigned) and set condition code result - used by conditional branch instruction.}
+
+  SWITCH(opcode) {
+    CASE cmpi_ltu:
+      LLVM MATCH CMPLTUI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpult $dst, $imm }
+      }
+    CASE cmpi_leu:
+      LLVM MATCH CMPLEUI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpule $dst, $imm }
+      }
+    CASE cmpi_gtu:
+      LLVM MATCH CMPGTUI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpugt $dst, $imm }
+      }
+    CASE cmpi_geu:
+      LLVM MATCH CMPGEUI
+      {
+        INS { dst, imm }
+	LET { Defs=[CC] }
+	CODE { node_cmpuge $dst, $imm }
+      }
+  }
+}
+
+OPERATION cmp_ex IN pipe.EX
+{
+    BEHAVIOR
+    {
+      uint8 CmpOp = IN.alu_op.to_uint32(0,4);
+
+      uint32 cmp_in1 = signal_bp_val_src1_ex;
+      uint32 cmp_in2 = signal_bp_val_src0_ex;
+      bool   cmp_out = false;
+
+      OUT.data_dst0_valid=false;  /* prevent future bypass, as register dst is not written */
+
+      switch (CmpOp)
+      {
+      case CMP_OP_EQ:
+        cmp_out = (cmp_in2==cmp_in1); break;
+      case CMP_OP_NE:
+        cmp_out = (cmp_in2!=cmp_in1); break;
+      case CMP_OP_LT:
+        cmp_out = ((int32)cmp_in2<(int32)cmp_in1); break;
+      case CMP_OP_LE:
+        cmp_out = ((int32)cmp_in2<=(int32)cmp_in1); break;
+      case CMP_OP_LTU:
+        cmp_out = ((uint32)cmp_in2<(uint32)cmp_in1); break;
+      case CMP_OP_LEU:
+        cmp_out = ((uint32)cmp_in2<=(uint32)cmp_in1); break;
+      case CMP_OP_GT:
+        cmp_out = ((int32)cmp_in2>(int32)cmp_in1); break;
+      case CMP_OP_GE:
+        cmp_out = ((int32)cmp_in2>=(int32)cmp_in1); break;
+      case CMP_OP_GTU:
+        cmp_out = ((uint32)cmp_in2>(uint32)cmp_in1); break;
+      case CMP_OP_GEU:
+        cmp_out = ((uint32)cmp_in2>=(uint32)cmp_in1); break;
+      default:
+	break;
+      }
+
+      CC             = cmp_out; /* condition code register */
+      compare_result = cmp_out; /* condition code signal (direct bypass) */
+      is_cmp_insn    = true;    /* enable bypass to movcc operation */
+    }
+}
+
+OPERATION cmp_eq
+{
+    CODING { 0b0000 }
+    SYNTAX { "cmpeq" }
+    EXPRESSION { CMP_OP_EQ }
+    DOCUMENTATION{Result is equal}
+}
+
+OPERATION cmp_ne
+{
+    CODING { 0b0001 }
+    SYNTAX { "cmpne" }
+    EXPRESSION { CMP_OP_NE }
+    DOCUMENTATION{Result is not-equal}
+}
+
+OPERATION cmp_lt
+{
+    CODING { 0b0010 }
+    SYNTAX { "cmplt" }
+    EXPRESSION { CMP_OP_LT }
+    DOCUMENTATION{Result is less than}
+}
+
+OPERATION cmp_le
+{
+    CODING { 0b0011 }
+    SYNTAX { "cmple" }
+    EXPRESSION { CMP_OP_LE }
+    DOCUMENTATION{Result is less than or equal}
+}
+
+OPERATION cmp_ltu
+{
+    CODING { 0b0100 }
+    SYNTAX { "cmpltu" }
+    EXPRESSION { CMP_OP_LTU }
+    DOCUMENTATION{Result is less than - Unsigned}
+}
+
+OPERATION cmp_leu
+{
+    CODING { 0b0101 }
+    SYNTAX { "cmpleu" }
+    EXPRESSION { CMP_OP_LEU }
+    DOCUMENTATION{Result is less than or equal - Unsigned}
+}
+
+OPERATION cmpi_eq
+{
+    CODING { 0b1000 }
+    SYNTAX { "cmpeq" }
+    EXPRESSION { CMP_OP_EQ }
+    DOCUMENTATION{Result is equal}
+}
+
+OPERATION cmpi_ne
+{
+    CODING { 0b1001 }
+    SYNTAX { "cmpne" }
+    EXPRESSION { CMP_OP_NE }
+    DOCUMENTATION{Result is not-equal}
+}
+
+OPERATION cmpi_lt
+{
+    CODING { 0b1010 }
+    SYNTAX { "cmplt" }
+    EXPRESSION { CMP_OP_LT }
+    DOCUMENTATION{Result is less than}
+}
+
+OPERATION cmpi_le
+{
+    CODING { 0b1011 }
+    SYNTAX { "cmple" }
+    EXPRESSION { CMP_OP_LE }
+    DOCUMENTATION{Result is less than or equal}
+}
+
+OPERATION cmpi_ltu
+{
+    CODING { 0b1100 }
+    SYNTAX { "cmpltu" }
+    EXPRESSION { CMP_OP_LTU }
+    DOCUMENTATION{Result is less than - Unsigned}
+}
+
+OPERATION cmpi_leu
+{
+    CODING { 0b1101 }
+    SYNTAX { "cmpleu" }
+    EXPRESSION { CMP_OP_LEU }
+    DOCUMENTATION{Result is less than or equal - Unsigned}
+}
+
+OPERATION cmpi_gt
+{
+    CODING { 0b0110 }
+    SYNTAX { "cmpgt" }
+    EXPRESSION { CMP_OP_GT }
+    DOCUMENTATION{Result is greater than}
+}
+
+OPERATION cmpi_ge
+{
+    CODING { 0b0111 }
+    SYNTAX { "cmpge" }
+    EXPRESSION { CMP_OP_GE }
+    DOCUMENTATION{Result is greater than or equal}
+}
+
+OPERATION cmpi_gtu
+{
+    CODING { 0b1110 }
+    SYNTAX { "cmpgtu" }
+    EXPRESSION { CMP_OP_GTU }
+    DOCUMENTATION{Result is greater than - Unsigned}
+}
+
+OPERATION cmpi_geu
+{
+    CODING { 0b1111 }
+    SYNTAX { "cmpgeu" }
+    EXPRESSION { CMP_OP_GEU }
+    DOCUMENTATION{Result is greater than or equal - Unsigned}
+}
+
+
+
+/* This operation is used to assigne the signal "compare_result" to the
+   CC register value.  If the current instruction in decode is a compare
+   instruction, then compare_result is overwritten in that cycle.  This
+   allows compare_result to always be the result of the last compare, even
+   if the compare was done several cycles ago
+*/
+OPERATION forward_cc
+{
+    DECLARE
+    {
+        WRITES_BEFORE cmp_ex;
+    }
+    BEHAVIOR
+    {
+        compare_result=CC;
+    }
+}
+

@@ -1,0 +1,142 @@
+LLVM
+{
+  NAMESPACE "LT";
+  REGISTER CLASS IntRegs
+  {
+  	TYPE i32;
+  	
+    ALLOCATE   R[0..5] DWARFREG=44 CALLER_SAVE;
+    ALLOCATE   R[6..13] DWARFREG=(44+6);
+    NOALLOCATE R[14] DWARFREG=(44+14);
+    ALLOCATE   R[15] DWARFREG=(44+15);
+
+    STACK_POINTER R14;
+    FRAME_POINTER R13;
+    RETURN_ADDRESS_REGISTER R15;
+  }
+
+  REGISTER CLASS CCReg
+  {
+    LET { CopyCost = -1 }
+    TYPE i32; // so that is can be moved to a stackslot
+    NOALLOCATE CC;
+  }
+
+  MATCH MOV
+  {
+    SYNTAX { alu(opcode=mov, src=reg, dst=reg) }
+    INS { src }
+    OUTS { dst }
+  }
+
+
+  // Hack for loading constants - will be resolved in delay slot filler:
+  // We will lower them there into two real instructions
+  MATCH LOAD_IMMEDIATE
+  {
+    LET { neverHasSideEffects=1, isReMaterializable=1 } 
+    SYNTAX { "ldil $dst, ($imm & 0xffff); ldilh $dst, ($imm >> 16)" }
+    OUTS { IntRegs:dst }
+    INS { imm32:imm }
+  }
+
+  // constants
+  PATTERN {
+    CODE { node_load_immediate tglobaladdr:$imm32u }
+    REMATCH { LOAD_IMMEDIATE tglobaladdr:imm32u }
+  }
+
+  PATTERN {
+    CODE { node_load_immediate tconstpool:$imm32u }
+    REMATCH { LOAD_IMMEDIATE tconstpool:imm32u }
+  }
+
+  PATTERN {
+    CODE { node_load_immediate tjumptable:$imm32u }
+    REMATCH { LOAD_IMMEDIATE tjumptable:imm32u }
+  }
+
+  PATTERN {
+    CODE { node_load_immediate texternalsym:$imm32u }
+    REMATCH { LOAD_IMMEDIATE texternalsym:imm32u }
+  }
+
+  PATTERN {
+    CODE { node_load_immediate tblockaddress:$imm32u }
+    REMATCH { LOAD_IMMEDIATE tblockaddress:imm32u }
+  }
+
+  PATTERN
+  {
+    CODE { i32 immZExt32:$val }
+    REMATCH { LOAD_IMMEDIATE immZExt32:val }
+
+  }
+  PATTERN
+  {
+    CODE { i32 immSExt32:$val }
+    REMATCH { LOAD_IMMEDIATE immSExt32:val }
+  }
+
+  // calls
+  PATTERN
+  {
+    CODE { call tglobaladdr:$dst }
+    REMATCH { CALL tglobaladdr:dst }
+  }
+
+  PATTERN
+  {
+    CODE { call texternalsym:$dst }
+    REMATCH { CALL texternalsym:dst }
+  }
+
+  PATTERN
+  {
+    CODE { call IntRegs:$src1 }
+    REMATCH { CALL_R IntRegs:src1 }
+  }
+
+  PATTERN
+  {
+    CODE { node_select IntRegs:$lhs, IntRegs:$rhs }
+    REMATCH { PSEUDO_SELECTrr IntRegs:lhs, IntRegs:rhs }
+  }
+
+  PATTERN
+  {
+    CODE { node_select immSExt4:$lhs, immSExt4:$rhs }
+    REMATCH { PSEUDO_SELECTii immSExt4:lhs, immSExt4:rhs }
+  }
+
+  PATTERN
+  {
+    CODE { node_select IntRegs:$lhs, immSExt4:$rhs }
+    REMATCH { PSEUDO_SELECTri IntRegs:lhs, immSExt4:rhs }
+  }
+
+  PATTERN
+  {
+    CODE { node_select immSExt4:$lhs, IntRegs:$rhs }
+    REMATCH { PSEUDO_SELECTir immSExt4:lhs, IntRegs:rhs }
+  }
+
+  PATTERN
+  {
+    CODE { i32 (extloadi8 ADDRESSri:$src) }
+    REMATCH { LOADZ8A ADDRESSri:src }
+  }
+
+  PATTERN
+  {
+    CODE { i32 (extloadi16 ADDRESSri:$src) }
+    REMATCH { LOADZ16A ADDRESSri:src }
+  }
+
+  INTRINSIC int_pdarch_example
+  {
+    EXTERN_C { int int_example(int lhs, int rhs) }
+    REMATCH { ADD IntRegs:lhs, IntRegs:rhs }
+  }
+
+}

@@ -1,0 +1,397 @@
+RESOURCE {
+  /* Unit for QoS logic */
+  UNIT QoS_DC IN pipe.DC {
+    OPERATIONS (
+		en_parity_st, dis_parity_st, set_data, chk_ld
+		);
+  };
+  
+  UNIT QoS_EX IN pipe.EX {
+    OPERATIONS (
+		chk_ld_ex
+		);
+  };
+  
+  UNIT QoS_MEM IN pipe.MEM {
+    OPERATIONS (
+		parity, chk_ld_mem
+		);
+  }; 
+  
+  UNIT QoS_WB IN pipe.WB {
+    OPERATIONS (
+		parity_st, chk_ld_wb_wrong, chk_ld_wb_correct
+		);
+  }; 
+}
+
+RESOURCE
+{
+  REGISTER unsigned bit[32] PAT_Value;
+  REGISTER unsigned bit[32] PAT_Value_st;
+  REGISTER unsigned bit[32] PAT_Value_rd;
+  REGISTER unsigned bit[32] PAT_Data;
+  REGISTER unsigned bit[32] DATA_Begin;
+  REGISTER unsigned bit[32] DATA_End;  
+  REGISTER unsigned bit[32] reg_chk_ind; 
+  REGISTER unsigned bit[32] reg_par_ind;
+  REGISTER bool EN_PAT, reg_parity_sta, reg_done_parity;
+  REGISTER bool Chk_ld_flag;
+           bool sig_wrong_flag;
+           bool sig_chk_flag;
+           bool sig_act_par_store;
+           bool sig_en_pat;
+  REGISTER unsigned bit[32] Addr_PAT;
+  REGISTER unsigned bit[32] Addr_PAT_rd;
+  REGISTER unsigned bit[32] Addr_LUT;  
+  REGISTER unsigned bit[16] Size_LUT;
+  REGISTER int CNT_PAT_local;
+  REGISTER int CNT_PAT_local_rd;
+}
+
+OPERATION en_parity_st IN  pipe.DC
+{
+  CODING { 0b00 0b0[28] }
+
+  SYNTAX { "en_parity" }
+
+  DOCUMENTATION("Disable parity encoding for store operation"){ }
+
+  BEHAVIOR
+    {
+      EN_PAT=true;
+    }
+}
+
+OPERATION dis_parity_st IN  pipe.DC
+{
+  CODING { 0b01 0b0[28] }
+
+  SYNTAX { "dis_parity" }
+
+  DOCUMENTATION("Disable parity encoding for store operation"){ }
+
+  BEHAVIOR
+    {
+      EN_PAT=false;
+    }
+}
+
+OPERATION set_data IN  pipe.DC
+{
+  DECLARE
+  {   	
+    GROUP start = { reg };
+    GROUP size  = { reg };
+    GROUP lut_addr = { reg };
+    GROUP lut_size = { reg };  
+  }
+  CODING { 0b001 0b0[11] start size lut_addr lut_size }
+
+  SYNTAX { "set_data" ~" " start ~" " size ~" " lut_addr ~" " lut_size }
+
+  DOCUMENTATION("Data configuration for protection"){ }
+
+  BEHAVIOR
+    {
+      DATA_Begin = R[start] - 4;
+      DATA_End = R[start] + (R[size]<<2);
+      reg_chk_ind = 1;
+      reg_par_ind = 1;
+      reg_done_parity = false;
+      
+      Addr_PAT=80000;
+      Addr_PAT_rd=80000;
+      CNT_PAT_local=0;
+      CNT_PAT_local_rd=-1;
+
+      Addr_LUT=R[lut_addr]>>2;
+      Size_LUT=R[lut_size];
+      
+     // cout << "Data begin: " << R[start] - 4 << endl;  
+     // cout << "Data size: " << R[size] << endl;
+     // cout << "Data size 2: " << (R[size]<<2) << endl;
+     // cout << "Data end: " << (R[start] + (R[size]<<2)) << endl;       
+     // cout << "Addr_LUT: " << R[lut_addr] << endl;
+    }
+}
+
+OPERATION parity IN  pipe.MEM
+{
+	DECLARE
+    {
+      INSTANCE parity_st;
+    }
+  BEHAVIOR
+    {
+    	unsigned bit[32] tmp;
+    	unsigned bit[32] pat_val, rest_data;
+    	unsigned bit[32] par;
+        unsigned bit[32] mask;
+    	int cnt_local, pos;
+
+        rest_data = DATA_End - DATA_Begin - (reg_par_ind<<2);
+        cnt_local = CNT_PAT_local;
+        pos=cnt_local;
+                    	
+//      cout << " rest data: " << rest_data << endl;
+
+      if (reg_parity_sta == false )
+      {
+        if (rest_data < 4 && reg_done_parity == false)
+        {
+        	Addr_PAT++;
+        	//CNT_PAT_local = 0;
+           	PAT_Value_st = PAT_Value;
+           	//PAT_Value=0;
+   	        sig_act_par_store = true;
+   	        reg_done_parity   = true;
+//            cout << " position: " << pos << " done parity encoding!" << endl;
+        }      	
+      }
+      else
+      {
+        reg_par_ind++;
+
+    	tmp = PAT_Data;
+        par = \
+        tmp.to_ubitvec( 0, 1)^tmp.to_ubitvec( 1, 1)^tmp.to_ubitvec( 2, 1)^tmp.to_ubitvec( 3, 1)^tmp.to_ubitvec( 4, 1)^tmp.to_ubitvec( 5, 1)^tmp.to_ubitvec( 6, 1)^\
+        tmp.to_ubitvec( 7, 1)^tmp.to_ubitvec( 8, 1)^tmp.to_ubitvec( 9, 1)^tmp.to_ubitvec(10, 1)^tmp.to_ubitvec(11, 1)^tmp.to_ubitvec(12, 1)^tmp.to_ubitvec(13, 1)^\
+      	tmp.to_ubitvec(14, 1)^tmp.to_ubitvec(15, 1)^tmp.to_ubitvec(16, 1)^tmp.to_ubitvec(17, 1)^tmp.to_ubitvec(18, 1)^tmp.to_ubitvec(19, 1)^tmp.to_ubitvec(20, 1)^\
+      	tmp.to_ubitvec(21, 1)^tmp.to_ubitvec(22, 1)^tmp.to_ubitvec(23, 1)^tmp.to_ubitvec(24, 1)^tmp.to_ubitvec(25, 1)^tmp.to_ubitvec(26, 1)^tmp.to_ubitvec(27, 1)^\
+      	tmp.to_ubitvec(28, 1)^tmp.to_ubitvec(29, 1)^tmp.to_ubitvec(30, 1)^tmp.to_ubitvec(31, 1);
+
+        pos=cnt_local;
+        
+        //pat_val=PAT_Value;
+   	    //pat_val.assign(par, pos, 1);
+
+        mask=(par<<pos);
+        pat_val=PAT_Value;
+        pat_val=pat_val|mask;
+        
+       // cout << "par " << par << " pos " << pos << " mask "<< mask << " pat_val " << pat_val <<" pat_val_2 "<<pat_val2<<endl;
+
+        if (cnt_local == 31)  // something can be wrong here in rest_data.
+        {
+        	Addr_PAT++;
+        	CNT_PAT_local = 0;
+           	PAT_Value_st = pat_val;
+           	PAT_Value=0;
+   	        sig_act_par_store=true;
+        }
+        else
+        {
+        	CNT_PAT_local++;
+           	PAT_Value=pat_val;
+            sig_act_par_store=false;
+        }
+//            cout << " position: " << pos << " parity update" << endl;
+            
+      }
+    }    
+
+    ACTIVATION {
+        if(sig_act_par_store) 
+        {
+          parity_st
+        }
+    }
+}
+
+OPERATION parity_st IN  pipe.WB
+{
+  BEHAVIOR
+  {
+      int wr_mask;
+      wr_mask = 0xffffffff;	
+      data_mem.setAddress_c0(Addr_PAT);
+      data_mem.setData_c0(PAT_Value_st, wr_mask);
+//    cout << "parity store addr: " << (Addr_PAT) << " Parity bits: " << PAT_Value_st << endl;
+  }
+}
+
+
+OPERATION chk_ld IN  pipe.DC
+{
+  DECLARE
+  {   	
+    GROUP src = { reg };
+    GROUP dst = { reg };    
+    INSTANCE chk_ld_ex;    
+  }      
+  CODING { 0b10 0b0[16] dst src 0b0[4] }
+  SYNTAX { "chk_ld" ~" " dst ~" " src }
+
+  DOCUMENTATION("Checking Operation for Approximate Load"){ Customized Checking Instructions for Approximate Load }
+
+  BEHAVIOR
+    {
+      int cnt_local;
+      unsigned bit[32] tmp;
+      signed bit[32] rest_data_ld;
+      
+      reg_chk_ind++;
+      
+      rest_data_ld = DATA_End - DATA_Begin - (reg_chk_ind<<2);
+      cnt_local = CNT_PAT_local_rd;
+
+      if (rest_data_ld<0) sig_chk_flag = false;
+      else
+      {
+      	sig_chk_flag = true;
+      	
+        if (cnt_local == -1 || cnt_local == 31)
+        {
+        	Addr_PAT_rd++;
+        	tmp=Addr_PAT_rd+1;
+//        	cout << "check load parity address to load: " << tmp << endl;
+            data_mem.setAddress_c0(tmp);
+        	CNT_PAT_local_rd = 0;
+            Chk_ld_flag = true;
+        }
+        else
+        {
+        	CNT_PAT_local_rd++;
+            Chk_ld_flag = false;
+        }
+      }     
+    }
+  ACTIVATION { 
+  	if (sig_chk_flag) { chk_ld_ex }
+  }
+}
+
+OPERATION chk_ld_ex IN  pipe.EX
+{
+  DECLARE
+  {   	
+    INSTANCE chk_ld_mem;
+  	INSTANCE chk_ld_wb_correct;
+    REFERENCE src, dst; 
+  }
+
+  BEHAVIOR
+    {
+        unsigned bit[32] tmp, tmp_rd;
+        unsigned bit[32] par, par_chk;
+        unsigned bit[32] mem_rd_data;
+        unsigned bit[32] mask;
+ 
+      /* try to read data */
+        if (Chk_ld_flag)
+        {
+        	data_mem.getData_c0(mem_rd_data);
+     //   	cout << "check load parity loaded data: " << mem_rd_data << endl;
+//        	cout << "check value from " << mem_rd_data << endl;
+        	PAT_Value_rd = mem_rd_data;
+        	tmp_rd = mem_rd_data;
+		}
+		else
+        {  
+//        	cout << "check value from " << PAT_Value_rd << endl;
+            tmp_rd = PAT_Value_rd;
+        }
+
+        tmp = R[src];  // check the data from fixed register
+ 
+//        cout << "bit id : " << CNT_PAT_local_rd;
+        	                   
+        par = \
+        tmp.to_ubitvec( 0, 1)^tmp.to_ubitvec( 1, 1)^tmp.to_ubitvec( 2, 1)^tmp.to_ubitvec( 3, 1)^tmp.to_ubitvec( 4, 1)^tmp.to_ubitvec( 5, 1)^tmp.to_ubitvec( 6, 1)^\
+        tmp.to_ubitvec( 7, 1)^tmp.to_ubitvec( 8, 1)^tmp.to_ubitvec( 9, 1)^tmp.to_ubitvec(10, 1)^tmp.to_ubitvec(11, 1)^tmp.to_ubitvec(12, 1)^tmp.to_ubitvec(13, 1)^\
+      	tmp.to_ubitvec(14, 1)^tmp.to_ubitvec(15, 1)^tmp.to_ubitvec(16, 1)^tmp.to_ubitvec(17, 1)^tmp.to_ubitvec(18, 1)^tmp.to_ubitvec(19, 1)^tmp.to_ubitvec(20, 1)^\
+      	tmp.to_ubitvec(21, 1)^tmp.to_ubitvec(22, 1)^tmp.to_ubitvec(23, 1)^tmp.to_ubitvec(24, 1)^tmp.to_ubitvec(25, 1)^tmp.to_ubitvec(26, 1)^tmp.to_ubitvec(27, 1)^\
+      	tmp.to_ubitvec(28, 1)^tmp.to_ubitvec(29, 1)^tmp.to_ubitvec(30, 1)^tmp.to_ubitvec(31, 1);
+
+        mask = (1<<CNT_PAT_local_rd);
+        par_chk = (tmp_rd & mask)>>CNT_PAT_local_rd;
+        
+        //par_chk = tmp_rd.to_bitvec(CNT_PAT_local_rd,1);
+        
+        //cout << "bit id : " << CNT_PAT_local_rd << endl;
+        //cout << " par: " << par << " par_chk: " << par_chk << " par_chk_2: " << par_chk_2 << endl;
+        
+        if (par_chk == par)
+        {
+        	//cout << "check correct, no need to update R[16]"<<endl;
+        	sig_wrong_flag = false;
+ //       	cout << " correct!"<<endl;
+        }
+        else   // use values from LUT
+        {
+ //       	cout << " wrong parity value!"<<endl;
+           	sig_wrong_flag = true;
+        }
+        
+
+    }
+    
+  ACTIVATION 
+  { 
+  	if (sig_wrong_flag) 
+        { 
+          chk_ld_mem
+        }
+    else 
+        {
+          chk_ld_wb_correct
+        }
+  }
+}
+
+OPERATION chk_ld_mem IN  pipe.MEM
+{
+	
+  DECLARE
+  {
+  	INSTANCE chk_ld_wb_wrong;
+    REFERENCE src, dst;
+  }
+  
+  BEHAVIOR
+    {
+        unsigned bit[32] lut_addr;
+            	
+        lut_addr = Addr_LUT + (reg_chk_ind%Size_LUT) - 2; // BUG here for more than 64 bits block
+//        cout << "Index: " << (reg_chk_ind) <<endl;       
+//        cout << "R[dst] address: " << lut_addr <<endl;
+        data_mem.setAddress_c0(lut_addr);
+    }
+    
+  ACTIVATION 
+  { 
+      chk_ld_wb_wrong
+  }
+}
+
+OPERATION chk_ld_wb_wrong IN  pipe.WB
+{
+	
+  DECLARE
+  {   	
+    REFERENCE src, dst; 
+  }
+  
+  BEHAVIOR
+    {
+        unsigned bit[32] mem_rd_data;
+      	data_mem.getData_c0(mem_rd_data);
+        R[dst] = mem_rd_data.to_uint32();
+//        cout << "R[dst]: " << mem_rd_data.to_uint32()<<endl;
+    }
+}
+
+OPERATION chk_ld_wb_correct IN  pipe.WB
+{
+	
+  DECLARE
+  {   	
+    REFERENCE src, dst; 
+  }
+  
+  BEHAVIOR
+    {
+        R[dst] = R[src];
+    }
+}

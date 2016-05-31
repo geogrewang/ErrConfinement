@@ -1,0 +1,142 @@
+/*******************************************************************************
+**                                                                            **
+**        This confidential and proprietary software may be used only         **
+**          as authorized by a licensing agreement from Synopsys, Inc.        **
+**      In the event of publication, the following notice is applicable:      **
+**                                                                            **
+**                   (c) COPYRIGHT 2011 - 2014 SYNOPSYS, INC.                 **
+**                            ALL RIGHTS RESERVED                             **
+**                                                                            **
+**    The entire notice above must be reproduced on all authorized copies.    **
+**                                                                            **
+*******************************************************************************/
+/**
+   Operands:
+   This file defines all operands like registers
+   and immediate values used in the core's 
+   instruction-set.
+*/
+
+
+/**
+	REGISTER OPERAND
+*/
+
+REGISTER reg
+{
+  DECLARE { LABEL idx; } // A label (=variable) for the register address
+  SYNTAX  { "r" ~idx   } // The assembly syntax is made up by "R" and the register address e.g. R1
+  CODING  { idx=0bx[4] } // The register address is encoded within 4 bits
+  EXPRESSION { idx }     // This operation returns the register address
+  DOCUMENTATION { General Purpose Register [0..15] }
+  LLVM { REGISTER IntRegs; }
+}
+
+
+/**
+   IMMEDIATE OPERANDS
+*/
+
+/* signed immediate operand 16-bit */
+IMMEDIATE simm16 
+{
+  DECLARE { LABEL imm; }
+  CODING  { imm = 0bx[16] }
+  SYNTAX  { SYMBOL(imm=#S16) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Signed 16-bit Immediate}
+  LLVM { IMMEDIATE imm16, immSExt16; }
+}
+
+/* unsigned immediate operand 16-bit */
+IMMEDIATE uimm16 
+{
+  DECLARE { LABEL imm; }
+  CODING  { imm = 0bx[16] }
+  SYNTAX  { SYMBOL(imm=#U16) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Unsigned 16-bit Immediate}
+  LLVM { IMMEDIATE imm16, immZExt16; }
+}
+
+/* signed immediate operand 8-bit */
+IMMEDIATE simm8 
+{
+  DECLARE { LABEL imm; }
+  CODING { imm = 0bx[8] }
+  SYNTAX { SYMBOL(imm=#S8) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Signed 8-bit Immediate}
+  LLVM { IMMEDIATE imm8, immSExt8; }
+}
+
+/* unsigned immediate operand 8-bit */
+IMMEDIATE uimm8 
+{
+  DECLARE { LABEL imm; }
+  CODING { imm = 0bx[8] }
+  SYNTAX { SYMBOL(imm=#U8) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Unsigned 8-bit Immediate}
+  LLVM { IMMEDIATE imm8, immZExt8; }
+}
+
+/* unsigned immediate operand 5-bit */
+IMMEDIATE uimm5
+{
+  DECLARE { LABEL imm; }
+  CODING  { imm = 0bx[5] }
+  SYNTAX  { SYMBOL(imm=#U5) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Unsigned 5-bit Immediate}
+  LLVM { IMMEDIATE imm5, immZExt5; }
+}
+
+/* signed immediate operand 4-bit */
+IMMEDIATE simm4 
+{
+  DECLARE { LABEL imm; }
+  CODING  { imm = 0bx[4] }
+  SYNTAX  { SYMBOL(imm=#S4) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Signed 4-bit Immediate}
+  LLVM { IMMEDIATE imm4, immSExt4; }
+}
+
+/* unsigned immediate operand 4-bit */
+IMMEDIATE uimm4 
+{
+  DECLARE { LABEL imm; }
+  CODING  { imm = 0bx[4] }
+  SYNTAX  { SYMBOL(imm=#U4) }
+  EXPRESSION { imm }
+  DOCUMENTATION{Unsigned 4-bit Immediate}
+  LLVM { IMMEDIATE imm4, immZExt4; }
+}
+
+/**
+   ADDRESS OPERANDS
+*/
+
+/* relative address operand 12-bit */
+IMMEDIATE addr12   
+{
+  DECLARE{ LABEL imm; }
+  CODING { imm = 0bx[12] }
+  SYNTAX { SYMBOL((CURRENT_ADDRESS+(imm=#S12))=#X16  ) }
+  EXPRESSION { imm }
+  DOCUMENTATION{ 16-bit Immediate, encoded as 12-bit signed offset relative to current address }
+  LLVM { IMMEDIATE brtarget, bb; }
+}
+
+/* relative address operand 24-bit */
+IMMEDIATE addr24  
+{
+  DECLARE{ LABEL imm; }
+  CODING { imm = 0bx[24] }
+  SYNTAX { SYMBOL((CURRENT_ADDRESS+(imm=#S24))=#X32  ) }
+  EXPRESSION { imm }
+  DOCUMENTATION { 32-bit Immediate, encoded as 24-bit signed offset relative to current address.}
+  LLVM { IMMEDIATE brtarget, bb; }
+}
+
